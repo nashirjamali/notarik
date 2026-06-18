@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/*
+  Notarik — "The Calm Ledger"
+  Restrained palette: pure-white ground, one indigo/violet accent (≤10%),
+  ink-dark text. Color carries meaning (action, selection, status, category),
+  never decoration.
+*/
+
+@theme {
+  /* Neutrals & ground */
+  --color-bg: oklch(1 0 0); /* pure white paper */
+  --color-surface: oklch(0.985 0.003 285); /* faint indigo-tinted panel */
+  --color-surface-2: oklch(0.965 0.005 285); /* nested fill / hover */
+  --color-border: oklch(0.915 0.006 285);
+  --color-border-strong: oklch(0.86 0.008 285);
+  --color-ink: oklch(0.24 0.028 285); /* body text — ~13:1 on white */
+  --color-muted: oklch(0.46 0.02 285); /* secondary text — ~4.8:1 on white */
+
+  /* Brand */
+  --color-primary: oklch(0.52 0.18 280); /* indigo/violet — actions, selection */
+  --color-primary-hover: oklch(0.47 0.18 280);
+  --color-primary-ink: oklch(0.99 0.005 285); /* text on primary fill */
+  --color-primary-soft: oklch(0.95 0.03 285); /* tinted selection bg */
+  --color-accent: oklch(0.62 0.11 215); /* cool teal — links, info */
+
+  /* Semantic / status */
+  --color-success: oklch(0.58 0.12 150);
+  --color-warning: oklch(0.74 0.15 75);
+  --color-danger: oklch(0.56 0.2 24);
+  --color-danger-soft: oklch(0.96 0.03 24);
+
+  /* Fixed category hues (kept distinct in hue, color-blind considerate) */
+  --color-cat-groceries: oklch(0.6 0.12 150);
+  --color-cat-dining: oklch(0.66 0.15 50);
+  --color-cat-transport: oklch(0.58 0.13 245);
+  --color-cat-shopping: oklch(0.56 0.16 305);
+  --color-cat-bills: oklch(0.57 0.18 20);
+  --color-cat-other: oklch(0.6 0.018 285);
+
+  /* Type */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  /* Motion */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Semantic z-index scale */
+  --z-sticky: 100;
+  --z-modal: 500;
+  --z-toast: 600;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-primary-soft);
+  }
+  /* Money and tabular data align by digit */
+  .nums {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  /* Visible, on-brand focus ring everywhere */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
