@@ -31,6 +31,7 @@ const STATUS_LABEL: Record<BudgetStatus, string> = {
 
 type Props = {
   monthTxs: Transaction[];
+  monthLabel: string;
   budget: number | null;
   onSave: (next: number | null) => void;
 };
@@ -40,7 +41,7 @@ type Props = {
  * are auto-assigned per receipt and shown beneath for visibility (PRODUCT.md
  * §8b, adapted to a single overall limit at the user's request).
  */
-export function BudgetPanel({ monthTxs, budget, onSave }: Props) {
+export function BudgetPanel({ monthTxs, monthLabel, budget, onSave }: Props) {
   const [editing, setEditing] = useState(false);
 
   return (
@@ -56,7 +57,7 @@ export function BudgetPanel({ monthTxs, budget, onSave }: Props) {
           >
             Monthly budget
           </h2>
-          <p className="mt-0.5 text-xs text-muted">This month, all categories</p>
+          <p className="mt-0.5 text-xs text-muted">{monthLabel}, all categories</p>
         </div>
         {!editing && (
           <button
@@ -86,13 +87,21 @@ export function BudgetPanel({ monthTxs, budget, onSave }: Props) {
           below.
         </p>
       ) : (
-        <Summary monthTxs={monthTxs} budget={budget} />
+        <Summary monthTxs={monthTxs} monthLabel={monthLabel} budget={budget} />
       )}
     </section>
   );
 }
 
-function Summary({ monthTxs, budget }: { monthTxs: Transaction[]; budget: number }) {
+function Summary({
+  monthTxs,
+  monthLabel,
+  budget,
+}: {
+  monthTxs: Transaction[];
+  monthLabel: string;
+  budget: number;
+}) {
   const s = budgetSummary(monthTxs, budget);
   const cats = categoryTotals(monthTxs);
   const over = s.status === "over";
@@ -143,7 +152,7 @@ function Summary({ monthTxs, budget }: { monthTxs: Transaction[]; budget: number
       {cats.length > 0 && (
         <div className="mt-6 border-t border-border pt-5">
           <p className="mb-3 text-xs font-medium text-muted">
-            This month by category
+            {monthLabel} by category
           </p>
           <ul className="space-y-2.5">
             {cats.map((c) => (

@@ -13,7 +13,7 @@ const pct = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
  * it carries the real figures (tabular, sorted largest-first) so the chart never
  * has to be precise — the numbers are.
  */
-export function Recap({ txs }: { txs: Transaction[] }) {
+export function Recap({ txs, label }: { txs: Transaction[]; label: string }) {
   const slices = categoryTotals(txs);
   const total = grandTotal(txs);
 
@@ -29,7 +29,7 @@ export function Recap({ txs }: { txs: Transaction[] }) {
         >
           Where it went
         </h2>
-        <span className="text-xs text-muted">All expenses</span>
+        <span className="text-xs text-muted">{label}</span>
       </div>
 
       <div className="mt-6 flex flex-col items-center gap-7 sm:flex-row sm:items-center sm:gap-9">

@@ -109,3 +109,22 @@ export const PlusIcon = (p: IconProps) => (
     <path d="M12 5v14M5 12h14" />
   </svg>
 );
+
+export const SearchIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-3.5-3.5" />
+  </svg>
+);
+
+export const ChevronLeftIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m14 6-6 6 6 6" />
+  </svg>
+);
+
+export const ChevronRightIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m10 6 6 6-6 6" />
+  </svg>
+);

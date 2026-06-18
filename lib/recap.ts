@@ -34,6 +34,54 @@ export function grandTotal(txs: Transaction[]): number {
   return txs.reduce((s, t) => s + t.total, 0);
 }
 
+/** A transaction's month bucket, "YYYY-MM", or null if its date is unreadable. */
+export function monthKeyOf(dateISO: string | null | undefined): string | null {
+  const m = /^(\d{4})-(\d{2})/.exec(dateISO ?? "");
+  return m ? `${m[1]}-${m[2]}` : null;
+}
+
+/** "2026-06" -> "June 2026". */
+export function monthLabel(key: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(key);
+  if (!m) return key;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, 1);
+  return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+}
+
+export function currentMonthKey(now = new Date()): string {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Distinct months present in the data, newest first, with display labels. */
+export function listMonths(
+  txs: Transaction[],
+): { key: string; label: string }[] {
+  const keys = new Set<string>();
+  for (const tx of txs) {
+    const k = monthKeyOf(tx.date);
+    if (k) keys.add(k);
+  }
+  return [...keys]
+    .sort((a, b) => b.localeCompare(a))
+    .map((key) => ({ key, label: monthLabel(key) }));
+}
+
+/** Transactions in a given "YYYY-MM" bucket. */
+export function filterByMonth(txs: Transaction[], key: string): Transaction[] {
+  return txs.filter((tx) => monthKeyOf(tx.date) === key);
+}
+
+/** A period the dashboard can scope to: everything, or one month. */
+export type Period = "all" | string;
+
+export function periodTxs(txs: Transaction[], period: Period): Transaction[] {
+  return period === "all" ? txs : filterByMonth(txs, period);
+}
+
+export function periodLabel(period: Period): string {
+  return period === "all" ? "All time" : monthLabel(period);
+}
+
 /** Transactions dated within the current calendar month (local time). */
 export function thisMonth(txs: Transaction[], now = new Date()): Transaction[] {
   const y = now.getFullYear();

@@ -18,9 +18,9 @@ git clone [repo-url]
 cd notarik
 npm install
 
-# add your Gemini API key
+# add your OpenRouter API key (used for receipt scanning and Excel import)
 cp .env.example .env.local
-# then edit .env.local and set LLM_API_KEY=your_key
+# then edit .env.local and set OPENROUTER_API_KEY=your_key
 
 npm run dev
 # open http://localhost:3000

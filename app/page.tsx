@@ -5,12 +5,22 @@ import type { ExtractionResult, Transaction } from "@/lib/types";
 import { prepareImage } from "@/lib/image";
 import {
   addTransaction,
+  addTransactions,
   deleteTransaction,
   loadBudget,
   loadTransactions,
+  replaceTransactions,
   saveBudget,
 } from "@/lib/storage";
-import { thisMonth } from "@/lib/recap";
+import {
+  type Period,
+  currentMonthKey,
+  filterByMonth,
+  listMonths,
+  monthLabel,
+  periodLabel,
+  periodTxs,
+} from "@/lib/recap";
 import { formatIDR } from "@/lib/format";
 import { ReceiptUploader } from "@/components/ReceiptUploader";
 import { ProcessingState } from "@/components/ProcessingState";
@@ -19,6 +29,8 @@ import { Recap } from "@/components/Recap";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { Projection } from "@/components/Projection";
 import { TransactionList } from "@/components/TransactionList";
+import { BackupBar } from "@/components/BackupBar";
+import { MonthSelector } from "@/components/MonthSelector";
 import { Toast } from "@/components/Toast";
 import { AlertIcon, RefreshIcon } from "@/components/icons";
 
@@ -33,6 +45,7 @@ export default function Home() {
   const [toast, setToast] = useState<string>("");
   const [saved, setSaved] = useState<Transaction[]>([]);
   const [budget, setBudget] = useState<number | null>(null);
+  const [period, setPeriod] = useState<Period>("all");
 
   useEffect(() => {
     // Mount-time hydration from localStorage. Deliberately not a lazy
@@ -40,7 +53,6 @@ export default function Home() {
     // pass and cause a hydration mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSaved(loadTransactions());
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBudget(loadBudget());
   }, []);
 
@@ -97,6 +109,10 @@ export default function Home() {
     setBudget(saveBudget(next));
   }
 
+  function handleImport(rows: Transaction[], mode: "merge" | "replace") {
+    setSaved(mode === "replace" ? replaceTransactions(rows) : addTransactions(rows));
+  }
+
   function reset() {
     setStage("idle");
     setResult(null);
@@ -106,7 +122,15 @@ export default function Home() {
   }
 
   const total = saved.reduce((s, t) => s + t.total, 0);
-  const monthTxs = thisMonth(saved);
+  const months = listMonths(saved);
+  // Guard against a stale selection after the underlying month disappears.
+  const activePeriod: Period =
+    period === "all" || months.some((m) => m.key === period) ? period : "all";
+  const shownTxs = periodTxs(saved, activePeriod);
+  const budgetMonthKey = activePeriod === "all" ? currentMonthKey() : activePeriod;
+  const budgetMonthTxs = filterByMonth(saved, budgetMonthKey);
+  const budgetMonthLabel =
+    activePeriod === "all" ? "This month" : monthLabel(activePeriod);
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 py-8 sm:py-12">
@@ -183,22 +207,40 @@ export default function Home() {
         </section>
 
         {stage === "idle" && saved.length === 0 && (
-          <p className="mt-6 text-center text-xs leading-relaxed text-muted">
-            Your receipts are read on the server and never stored there. Expenses
-            are saved on this device only.
-          </p>
+          <>
+            <p className="mt-6 text-center text-xs leading-relaxed text-muted">
+              Your receipts are read on the server and never stored there.
+              Expenses are saved on this device only.
+            </p>
+            <div className="mt-8">
+              <BackupBar txs={saved} onApply={handleImport} onToast={setToast} />
+            </div>
+          </>
         )}
 
         {saved.length > 0 && (
           <div className="mt-12 space-y-6">
-            <Recap txs={saved} />
+            <div className="flex items-center justify-end px-1">
+              <MonthSelector
+                months={months}
+                value={activePeriod}
+                onChange={setPeriod}
+              />
+            </div>
+            <Recap txs={shownTxs} label={periodLabel(activePeriod)} />
             <BudgetPanel
-              monthTxs={monthTxs}
+              monthTxs={budgetMonthTxs}
+              monthLabel={budgetMonthLabel}
               budget={budget}
               onSave={handleBudget}
             />
             <Projection txs={saved} />
-            <TransactionList txs={saved} onDelete={handleDelete} />
+            <TransactionList
+              txs={shownTxs}
+              onDelete={handleDelete}
+              grouped={activePeriod === "all"}
+            />
+            <BackupBar txs={saved} onApply={handleImport} onToast={setToast} />
           </div>
         )}
       </main>

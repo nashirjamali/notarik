@@ -28,6 +28,19 @@ export function addTransaction(tx: Transaction): Transaction[] {
   return list;
 }
 
+/** Replace the entire transaction list and persist. Returns the new list. */
+export function replaceTransactions(list: Transaction[]): Transaction[] {
+  persist(list);
+  return list;
+}
+
+/** Prepend many transactions (newest-first) and persist. Returns the new list. */
+export function addTransactions(txs: Transaction[]): Transaction[] {
+  const list = [...txs, ...loadTransactions()];
+  persist(list);
+  return list;
+}
+
 /** Remove a transaction by id and persist. Returns the updated list. */
 export function deleteTransaction(id: string): Transaction[] {
   const list = loadTransactions().filter((t) => t.id !== id);

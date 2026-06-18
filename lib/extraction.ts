@@ -33,7 +33,7 @@ function extractJsonBlock(text: string): string {
   return trimmed;
 }
 
-function toNumberOrNull(v: unknown): number | null {
+export function toNumberOrNull(v: unknown): number | null {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   if (typeof v === "string") {
     const cleaned = v.replace(/[^\d.-]/g, "");
@@ -43,7 +43,7 @@ function toNumberOrNull(v: unknown): number | null {
   return null;
 }
 
-function normalizeCategory(v: unknown): Category {
+export function normalizeCategory(v: unknown): Category {
   if (typeof v === "string") {
     const match = CATEGORIES.find(
       (c) => c.toLowerCase() === v.trim().toLowerCase(),
@@ -53,13 +53,13 @@ function normalizeCategory(v: unknown): Category {
   return "Other";
 }
 
-function normalizeDate(v: unknown): string | null {
+export function normalizeDate(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const m = v.match(/(\d{4})-(\d{2})-(\d{2})/);
   return m ? m[0] : null;
 }
 
-function normalizeItems(v: unknown): Item[] {
+export function normalizeItems(v: unknown): Item[] {
   if (!Array.isArray(v)) return [];
   return v
     .map((raw): Item | null => {

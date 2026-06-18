@@ -24,13 +24,14 @@ export function DonutChart({ slices, size = 168 }: Props) {
   const circumference = 2 * Math.PI * r;
   const gap = slices.length > 1 ? 0.012 * circumference : 0; // small visual breather
 
-  // Cumulative start offset for each slice, computed up front so render stays pure.
-  let running = 0;
-  const segments = slices.map((s) => {
-    const offset = running;
-    running += s.share * circumference;
-    return { s, offset };
-  });
+  // Cumulative start offset for each slice (sum of preceding shares). Computed
+  // functionally so render stays pure — the slice count is tiny.
+  const segments = slices.map((s, i) => ({
+    s,
+    offset: slices
+      .slice(0, i)
+      .reduce((acc, prev) => acc + prev.share * circumference, 0),
+  }));
 
   return (
     <svg
