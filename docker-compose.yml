@@ -1,0 +1,33 @@
+services:
+  notarik:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: notarik:latest
+    container_name: notarik
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-google/gemini-2.5-flash}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=notarik
+      - traefik.http.routers.notarik.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.notarik.entrypoints=websecure
+      - traefik.http.routers.notarik.tls=true
+      - traefik.http.routers.notarik.tls.certresolver=letsencrypt
+      - traefik.http.routers.notarik.service=notarik
+      - traefik.http.routers.notarik-http.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.notarik-http.entrypoints=web
+      - traefik.http.routers.notarik-http.middlewares=notarik-redirect
+      - traefik.http.routers.notarik-http.service=notarik
+      - traefik.http.middlewares.notarik-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.notarik-redirect.redirectscheme.permanent=true
+      - traefik.http.services.notarik.loadbalancer.server.port=3000
+    networks:
+      - notarik
+
+networks:
+  notarik:
+    external: true
