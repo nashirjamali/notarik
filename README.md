@@ -9,7 +9,7 @@
 
 ## What it is, and how to run it
 
-Notarik turns a photo of a paper receipt into a structured, categorized expense entry. I snap a receipt, it reads the merchant, date, line items, and total, assigns a spending category, and adds it to a running recap with a per-category summary, budget tracking, and a rough spend projection. I can also export everything to Excel as a backup and import it back if my data ever gets wiped.
+Notarik turns a photo of a paper receipt into a structured, categorized expense entry. I snap a receipt, it reads the merchant, date, line items, and total, assigns a spending category, and adds it to a running recap with a per-category summary, a single total monthly budget, and a rough spend projection. I can also export everything to Excel as a backup and import it back if my data ever gets wiped.
 
 **Run locally:**
 
@@ -61,7 +61,7 @@ There are full budgeting and accounting apps that do far more — bank sync, bud
 
 **Added because I personally wanted them (built only after the core was solid):**
 
-- Budget per category — set a monthly limit (e.g. groceries, dining) and see spent vs budget, remaining or over, in both IDR and percentage.
+- Monthly budget — set one total limit for the month and see spent vs budget, remaining or over, in both IDR and percentage. Every receipt counts against the single limit; the per-category breakdown is still shown for visibility, but I budget the month as a whole rather than micro-managing each category.
 - Spend projection — a simple simulation of what I'd spend in ~2 and ~4 months if my current pace holds.
 
 **Left out, on purpose:**

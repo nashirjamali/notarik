@@ -143,10 +143,10 @@ Handling rules:
 
 ## 8b. Budget logic (F10)
 
-The user sets an optional monthly limit per category. For the current calendar month, for each category with a budget:
+The user sets **one optional total monthly limit** for all spending — not a limit per category. Categories are still auto-assigned per receipt and shown for visibility, but the user budgets their month as a whole. For the current calendar month:
 
 ```
-spent      = sum of this month's transactions in that category
+spent      = sum of ALL of this month's transactions
 remaining  = monthlyLimit - spent
 percentUsed = spent / monthlyLimit * 100
 status:
@@ -155,7 +155,9 @@ status:
   - "over"       if percentUsed > 100   (deficit)
 ```
 
-Display per category: spent vs limit, remaining/over in **both IDR and %**, and a clear surplus/deficit indicator (e.g. green = remaining, amber = near, red = over). Categories without a budget are simply not tracked. All math is purely arithmetic on the user's own data — no prediction here.
+Display: total spent vs limit, remaining/over in **both IDR and %**, and a clear surplus/deficit indicator (e.g. green = remaining, amber = near, red = over). Beneath the headline, this month's spend is broken down per category for visibility (read-only — categories are not individually budgeted). When no budget is set, nothing is tracked. All math is purely arithmetic on the user's own data — no prediction here.
+
+> **Design note:** an earlier draft budgeted each category separately. The single-total model was chosen because the user wants to cap their overall monthly spend without micro-managing per-category limits, while still *seeing* where the money goes. Stored as one number (`notarik.budget.v1`).
 
 ---
 

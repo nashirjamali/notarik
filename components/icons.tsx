@@ -87,3 +87,25 @@ export const ChevronDownIcon = (p: IconProps) => (
     <path d="m6 9 6 6 6-6" />
   </svg>
 );
+
+export const TrashIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 6.5h16" />
+    <path d="M9 6.5V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v1.5" />
+    <path d="M6.5 6.5 7.3 19a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12.5" />
+    <path d="M10 10.5v6M14 10.5v6" />
+  </svg>
+);
+
+export const TrendIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M3 17 9.5 10.5l3.5 3.5L21 6" />
+    <path d="M21 11V6h-5" />
+  </svg>
+);
+
+export const PlusIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);

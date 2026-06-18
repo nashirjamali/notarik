@@ -3,11 +3,22 @@
 import { useEffect, useState } from "react";
 import type { ExtractionResult, Transaction } from "@/lib/types";
 import { prepareImage } from "@/lib/image";
-import { addTransaction, loadTransactions } from "@/lib/storage";
+import {
+  addTransaction,
+  deleteTransaction,
+  loadBudget,
+  loadTransactions,
+  saveBudget,
+} from "@/lib/storage";
+import { thisMonth } from "@/lib/recap";
 import { formatIDR } from "@/lib/format";
 import { ReceiptUploader } from "@/components/ReceiptUploader";
 import { ProcessingState } from "@/components/ProcessingState";
 import { ReviewCard } from "@/components/ReviewCard";
+import { Recap } from "@/components/Recap";
+import { BudgetPanel } from "@/components/BudgetPanel";
+import { Projection } from "@/components/Projection";
+import { TransactionList } from "@/components/TransactionList";
 import { Toast } from "@/components/Toast";
 import { AlertIcon, RefreshIcon } from "@/components/icons";
 
@@ -21,6 +32,7 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [toast, setToast] = useState<string>("");
   const [saved, setSaved] = useState<Transaction[]>([]);
+  const [budget, setBudget] = useState<number | null>(null);
 
   useEffect(() => {
     // Mount-time hydration from localStorage. Deliberately not a lazy
@@ -28,6 +40,8 @@ export default function Home() {
     // pass and cause a hydration mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSaved(loadTransactions());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBudget(loadBudget());
   }, []);
 
   async function runExtraction(image: string) {
@@ -74,6 +88,15 @@ export default function Home() {
     setToast(`Saved ${formatIDR(tx.total)} to ${tx.category}`);
   }
 
+  function handleDelete(id: string) {
+    setSaved(deleteTransaction(id));
+    setToast("Expense deleted");
+  }
+
+  function handleBudget(next: number | null) {
+    setBudget(saveBudget(next));
+  }
+
   function reset() {
     setStage("idle");
     setResult(null);
@@ -83,6 +106,7 @@ export default function Home() {
   }
 
   const total = saved.reduce((s, t) => s + t.total, 0);
+  const monthTxs = thisMonth(saved);
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 py-8 sm:py-12">
@@ -158,11 +182,24 @@ export default function Home() {
           )}
         </section>
 
-        {stage === "idle" && (
+        {stage === "idle" && saved.length === 0 && (
           <p className="mt-6 text-center text-xs leading-relaxed text-muted">
             Your receipts are read on the server and never stored there. Expenses
             are saved on this device only.
           </p>
+        )}
+
+        {saved.length > 0 && (
+          <div className="mt-12 space-y-6">
+            <Recap txs={saved} />
+            <BudgetPanel
+              monthTxs={monthTxs}
+              budget={budget}
+              onSave={handleBudget}
+            />
+            <Projection txs={saved} />
+            <TransactionList txs={saved} onDelete={handleDelete} />
+          </div>
         )}
       </main>
 

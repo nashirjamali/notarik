@@ -9,6 +9,16 @@ export function formatIDR(value: number | null | undefined): string {
   return `Rp ${idr.format(Math.round(value))}`;
 }
 
+/**
+ * Group digits id-ID style without the "Rp" prefix — e.g. 3500000 -> "3.500.000".
+ * For amount inputs that already render "Rp" as an adornment. Empty string for
+ * no value, so a controlled input can sit empty and show its placeholder.
+ */
+export function formatAmount(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return "";
+  return idr.format(Math.round(value));
+}
+
 /** Parse a user-typed amount ("45.000", "Rp 45000", "45,5") into a number. */
 export function parseAmount(input: string): number | null {
   const cleaned = input.replace(/[^\d]/g, "");

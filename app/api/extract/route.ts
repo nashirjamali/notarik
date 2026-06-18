@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001";
+const MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // ~8MB of base64 payload
 
