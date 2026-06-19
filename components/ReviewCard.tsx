@@ -1,20 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ExtractionResult, Transaction } from "@/lib/types";
-import { formatIDR, parseAmount, todayISO } from "@/lib/format";
+import type { ExtractionResult, Item, Transaction } from "@/lib/types";
+import { formatAmount, formatIDR, parseAmount, todayISO } from "@/lib/format";
 import { newId } from "@/lib/storage";
 import { CategoryPicker } from "./CategoryPicker";
-import { AlertIcon, CheckIcon, ChevronDownIcon, RefreshIcon } from "./icons";
+import {
+  AlertIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  PlusIcon,
+  RefreshIcon,
+  XIcon,
+} from "./icons";
 
 type Props = {
   result: ExtractionResult;
   preview: string;
   onSave: (tx: Transaction) => void;
   onRetake: () => void;
+  /** No photo behind this entry — typed by hand. Hides the image + "we read" cues. */
+  manual?: boolean;
 };
 
-export function ReviewCard({ result, preview, onSave, onRetake }: Props) {
+export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props) {
   const [merchant, setMerchant] = useState(result.merchant ?? "");
   const [date, setDate] = useState(result.date ?? todayISO());
   const [totalText, setTotalText] = useState(
@@ -22,25 +31,30 @@ export function ReviewCard({ result, preview, onSave, onRetake }: Props) {
   );
   const [category, setCategory] = useState(result.category);
   const [itemsOpen, setItemsOpen] = useState(false);
+  const [items, setItems] = useState<Item[]>(result.items);
 
   const total = parseAmount(totalText);
-  const totalUnread = result.total == null;
-  const dateUnread = result.date == null;
-  const merchantUnread = result.merchant == null;
+  const totalUnread = !manual && result.total == null;
+  const dateUnread = !manual && result.date == null;
+  const merchantUnread = !manual && result.merchant == null;
 
   const canSave = merchant.trim().length > 0 && total != null && total > 0;
 
+  // price is the line total (qty already baked in), so sum it directly —
+  // multiplying by qty would shrink weight-priced items (e.g. 0.1 kg of chili).
   const itemsTotal = useMemo(
-    () =>
-      result.items.reduce(
-        (sum, it) => sum + (it.price ?? 0) * (it.qty ?? 1),
-        0,
-      ),
-    [result.items],
+    () => items.reduce((sum, it) => sum + (it.price ?? 0), 0),
+    [items],
   );
+
+  function updateItem(index: number, patch: Partial<Item>) {
+    setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
+  }
 
   function handleSave() {
     if (!canSave || total == null) return;
+    // Drop blank rows; a kept item needs at least a name.
+    const cleanItems = items.filter((it) => it.name.trim().length > 0);
     onSave({
       id: newId(),
       merchant: merchant.trim(),
@@ -48,7 +62,7 @@ export function ReviewCard({ result, preview, onSave, onRetake }: Props) {
       total,
       currency: "IDR",
       category,
-      items: result.items,
+      items: cleanItems,
       createdAt: new Date().toISOString(),
       imageThumb: preview,
     });
@@ -59,30 +73,42 @@ export function ReviewCard({ result, preview, onSave, onRetake }: Props) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="font-serif text-2xl tracking-tight text-ink">
-            Check the details
+            {manual ? "Add an expense" : "Check the details"}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            We read this from your receipt. Fix anything that&apos;s off, then save.
+            {manual
+              ? "Type the details, then save."
+              : "We read this from your receipt. Fix anything that’s off, then save."}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onRetake}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink"
-        >
-          <RefreshIcon size={16} />
-          <span className="hidden sm:inline">Retake</span>
-        </button>
+        {!manual && (
+          <button
+            type="button"
+            onClick={onRetake}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            <RefreshIcon size={16} />
+            <span className="hidden sm:inline">Retake</span>
+          </button>
+        )}
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-[8.5rem_1fr] sm:items-start">
+      <div
+        className={
+          manual
+            ? "grid gap-6"
+            : "grid gap-6 sm:grid-cols-[8.5rem_1fr] sm:items-start"
+        }
+      >
         {/* Receipt reference — base64 data URL, next/image can't optimize it */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={preview}
-          alt="The receipt you uploaded"
-          className="hidden w-full rounded-lg border border-border object-cover sm:block"
-        />
+        {!manual && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={preview}
+            alt="The receipt you uploaded"
+            className="hidden w-full rounded-lg border border-border object-cover sm:block"
+          />
+        )}
 
         <div className="flex flex-col gap-5">
           {/* The total — the figure that matters most */}
@@ -103,8 +129,8 @@ export function ReviewCard({ result, preview, onSave, onRetake }: Props) {
               <input
                 id="total"
                 inputMode="numeric"
-                value={totalText}
-                onChange={(e) => setTotalText(e.target.value.replace(/[^\d.]/g, ""))}
+                value={total != null ? formatAmount(total) : ""}
+                onChange={(e) => setTotalText(e.target.value.replace(/[^\d]/g, ""))}
                 placeholder="0"
                 aria-invalid={!canSave && totalText.length > 0}
                 className="nums w-full min-w-0 bg-transparent font-serif text-4xl tracking-tight text-ink outline-none placeholder:text-border-strong"
@@ -144,51 +170,118 @@ export function ReviewCard({ result, preview, onSave, onRetake }: Props) {
             <CategoryPicker value={category} onChange={setCategory} />
           </div>
 
-          {/* Items */}
-          {result.items.length > 0 && (
-            <div className="rounded-lg border border-border">
-              <button
-                type="button"
-                onClick={() => setItemsOpen((o) => !o)}
-                aria-expanded={itemsOpen}
-                className="flex w-full items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm transition-colors hover:bg-surface-2"
-              >
-                <span className="font-medium text-ink">
-                  {result.items.length} item{result.items.length > 1 ? "s" : ""}
-                </span>
-                <span className="flex items-center gap-2 text-muted">
-                  {itemsTotal > 0 && (
-                    <span className="nums text-xs">{formatIDR(itemsTotal)}</span>
-                  )}
-                  <ChevronDownIcon
-                    size={18}
-                    className={`transition-transform duration-200 ${itemsOpen ? "rotate-180" : ""}`}
-                  />
-                </span>
-              </button>
-              {itemsOpen && (
-                <ul className="border-t border-border px-4 py-2.5 text-sm">
-                  {result.items.map((it, i) => (
-                    <li
-                      key={i}
-                      className="flex items-baseline justify-between gap-4 py-1.5"
-                    >
-                      <span className="text-ink">
-                        {it.qty && it.qty > 1 && (
-                          <span className="nums mr-1.5 text-muted">{it.qty}×</span>
-                        )}
-                        {it.name}
+          {/* Items — editable when typed by hand, read-only when read from a photo */}
+          {manual ? (
+            <div>
+              <div className="mb-2 flex items-baseline justify-between gap-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  Items <span className="normal-case tracking-normal">(optional)</span>
+                </p>
+                {itemsTotal > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setTotalText(String(itemsTotal))}
+                    className="nums text-xs font-medium text-primary transition-colors hover:text-primary-hover"
+                  >
+                    Sum {formatIDR(itemsTotal)} → set as total
+                  </button>
+                )}
+              </div>
+
+              {items.length > 0 && (
+                <ul className="mb-2 flex flex-col gap-2">
+                  {items.map((it, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <input
+                        value={it.name}
+                        onChange={(e) => updateItem(i, { name: e.target.value })}
+                        placeholder="Item name"
+                        aria-label={`Item ${i + 1} name`}
+                        className="field-input flex-1"
+                      />
+                      <span className="flex items-center gap-1 rounded-md border border-border-strong bg-bg px-2.5 py-2">
+                        <span className="text-sm text-muted">Rp</span>
+                        <input
+                          inputMode="numeric"
+                          value={it.price != null ? formatAmount(it.price) : ""}
+                          onChange={(e) =>
+                            updateItem(i, {
+                              price: parseAmount(e.target.value) ?? undefined,
+                            })
+                          }
+                          placeholder="0"
+                          aria-label={`Item ${i + 1} price`}
+                          className="nums w-24 bg-transparent text-right text-sm text-ink outline-none placeholder:text-muted"
+                        />
                       </span>
-                      {it.price != null && (
-                        <span className="nums shrink-0 text-muted">
-                          {formatIDR(it.price)}
-                        </span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setItems((prev) => prev.filter((_, j) => j !== i))}
+                        aria-label={`Remove item ${i + 1}`}
+                        className="shrink-0 rounded-md p-2 text-muted transition-colors hover:bg-danger-soft hover:text-danger"
+                      >
+                        <XIcon size={16} />
+                      </button>
                     </li>
                   ))}
                 </ul>
               )}
+
+              <button
+                type="button"
+                onClick={() => setItems((prev) => [...prev, { name: "" }])}
+                className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border-strong px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-ink"
+              >
+                <PlusIcon size={16} />
+                Add item
+              </button>
             </div>
+          ) : (
+            items.length > 0 && (
+              <div className="rounded-lg border border-border">
+                <button
+                  type="button"
+                  onClick={() => setItemsOpen((o) => !o)}
+                  aria-expanded={itemsOpen}
+                  className="flex w-full items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm transition-colors hover:bg-surface-2"
+                >
+                  <span className="font-medium text-ink">
+                    {items.length} item{items.length > 1 ? "s" : ""}
+                  </span>
+                  <span className="flex items-center gap-2 text-muted">
+                    {itemsTotal > 0 && (
+                      <span className="nums text-xs">{formatIDR(itemsTotal)}</span>
+                    )}
+                    <ChevronDownIcon
+                      size={18}
+                      className={`transition-transform duration-200 ${itemsOpen ? "rotate-180" : ""}`}
+                    />
+                  </span>
+                </button>
+                {itemsOpen && (
+                  <ul className="border-t border-border px-4 py-2.5 text-sm">
+                    {items.map((it, i) => (
+                      <li
+                        key={i}
+                        className="flex items-baseline justify-between gap-4 py-1.5"
+                      >
+                        <span className="text-ink">
+                          {it.qty && it.qty > 1 && (
+                            <span className="nums mr-1.5 text-muted">{it.qty}×</span>
+                          )}
+                          {it.name}
+                        </span>
+                        {it.price != null && (
+                          <span className="nums shrink-0 text-muted">
+                            {formatIDR(it.price)}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )
           )}
         </div>
       </div>
@@ -200,7 +293,7 @@ export function ReviewCard({ result, preview, onSave, onRetake }: Props) {
           onClick={onRetake}
           className="rounded-md border border-border-strong bg-bg px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
         >
-          Start over
+          {manual ? "Cancel" : "Start over"}
         </button>
         <button
           type="button"

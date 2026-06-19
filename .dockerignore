@@ -12,3 +12,4 @@ docker-compose.yml
 .impeccable
 README.md
 *.md
+docs

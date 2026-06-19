@@ -1,15 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CameraIcon, UploadIcon, ReceiptIcon } from "./icons";
+import { CameraIcon, UploadIcon, ReceiptIcon, PlusIcon } from "./icons";
 import { CameraCapture } from "./CameraCapture";
 
 type Props = {
   onSelect: (file: File) => void;
+  onManual: () => void;
   disabled?: boolean;
 };
 
-export function ReceiptUploader({ onSelect, disabled }: Props) {
+export function ReceiptUploader({ onSelect, onManual, disabled }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -50,8 +51,8 @@ export function ReceiptUploader({ onSelect, disabled }: Props) {
             Snap a receipt, skip the typing
           </p>
           <p className="mx-auto max-w-[42ch] text-sm leading-relaxed text-muted">
-            Take a photo or upload one. We&apos;ll read the merchant, date, total,
-            and items — you just confirm.
+            Take a photo, or upload an image or PDF. We&apos;ll read the merchant,
+            date, total, and items — you just confirm.
           </p>
         </div>
 
@@ -72,19 +73,29 @@ export function ReceiptUploader({ onSelect, disabled }: Props) {
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-border-strong bg-bg px-4 py-2.5 text-sm font-medium text-ink transition-[background-color,transform] duration-150 hover:bg-surface-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
             <UploadIcon size={18} />
-            Choose image
+            Image or PDF
           </button>
         </div>
 
         <p className="hidden text-xs text-muted sm:block">
-          or drag &amp; drop an image here
+          or drag &amp; drop an image or PDF here
         </p>
       </div>
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onManual}
+        className="inline-flex items-center justify-center gap-1.5 self-center rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <PlusIcon size={16} />
+        Enter manually instead
+      </button>
 
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf"
         className="sr-only"
         onChange={(e) => {
           handleFiles(e.target.files);

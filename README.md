@@ -2,7 +2,7 @@
 
 > Take a photo of a receipt and it auto-extracts what you bought, the total, and the category — no more typing receipts into a spreadsheet one by one.
 
-**Live demo:** https://notarik.nashir.tech
+**Live demo:** https://notarik.vercel.app
 **Repo:** https://github.com/nashirjamali/notarik
 
 ---
@@ -28,6 +28,50 @@ npm run dev
 
 ---
 
+## Screens
+
+### Add a receipt
+Three ways in: take a photo, upload an image or PDF, or enter it by hand.
+
+![Add a receipt by photo, image, PDF, or manual entry](docs/screenshots/01-capture.png)
+
+### Review & correct
+Check the AI's read and fix the total, category, or items before saving.
+
+![Review and correct the extracted expense](docs/screenshots/02-review.png)
+
+### Manual entry
+No photo needed — type the merchant, total, category, and line items.
+
+![Manual expense entry with line items](docs/screenshots/03-manual.png)
+
+### Recap
+Per-category chart and totals, scoped to all time or a single month.
+
+![Per-category recap chart](docs/screenshots/04-recap.png)
+
+### Monthly budget
+One total monthly limit — spent vs budget in IDR and %, with the per-category breakdown.
+
+![Monthly budget tracking](docs/screenshots/05-budget.png)
+
+### Projection
+A rough straight-line estimate of where the current pace is heading.
+
+![Spend projection](docs/screenshots/06-projection.png)
+
+### Transactions
+Month-grouped ledger with search and pagination; expand a row for its line items.
+
+![Transaction list with search and pagination](docs/screenshots/07-transactions.png)
+
+### Excel backup
+Export everything to `.xlsx`, or import any layout back — AI maps the columns.
+
+![Excel export and import](docs/screenshots/08-backup.png)
+
+---
+
 ## Who it's for, and the one job it has to do well
 
 For someone who wants to track spending but keeps giving up because typing every receipt into a spreadsheet is tedious — groceries and dining out have a dozen line items each, and forgotten receipts make the recap fall apart.
@@ -50,7 +94,7 @@ Full budgeting and accounting apps do far more — bank sync, multi-account dash
 
 ## What I put in scope, what I left out, and why
 
-**In:** snap/upload a receipt, AI extraction (merchant, date, items, final total), auto-categorization, review & correct, per-category recap chart, monthly browsing with search + pagination, Excel export/import (AI maps any column layout on import), one total monthly budget, and a spend projection.
+**In:** add a receipt by photo, image/PDF upload, or manual entry; AI extraction (merchant, date, items, final total), auto-categorization, review & correct, per-category recap chart, monthly browsing with search + pagination, Excel export/import (AI maps any column layout on import), one total monthly budget, and a spend projection.
 
 **Out:** **split bill** (a whole feature on its own — my #1 next item), **accounts/login/cloud sync** (local storage + Excel export is enough to prove it), and **multi-currency** (IDR only).
 

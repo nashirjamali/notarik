@@ -14,6 +14,9 @@ Return exactly this shape:
 
 Rules:
 - "total" MUST be the FINAL PAYABLE AMOUNT (grand total / amount due / total after tax and service charge) — NEVER the subtotal. If several totals appear, choose the largest "total / amount due" line, not the subtotal.
+- "items[].price" MUST be the LINE TOTAL actually charged for that item — the RIGHTMOST amount printed on the item's line. Indonesian receipts print each item as: CODE  QTY X UNIT_PRICE  [discount]  LINE_TOTAL. Take LINE_TOTAL, NOT the unit price after "X". Example: "024895  0,02 X Rp.45.518   1.001" -> price is 1001 (not 45518). If a discount/percentage is shown (e.g. "1,00 X Rp.6.730  30%  4.711"), the printed line total already includes it -> price is 4711; NEVER recompute qty × unit price.
+- "qty" is the quantity or weight shown before "X" (e.g. 0.02). It is informational only — never multiply price by qty.
+- The sum of all items[].price should equal the receipt's subtotal.
 - Amounts are Indonesian Rupiah. Return plain integers with no separators, currency symbols, or decimals (e.g. 45000, not "Rp 45.000").
 - If a field cannot be read with confidence, return null for it (use null for merchant/date/total; for items, omit unreadable rows). Do NOT guess.
 - "category" must be exactly one of the six listed values; pick the best fit. If unsure, use "Other".

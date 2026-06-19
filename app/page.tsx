@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ExtractionResult, Transaction } from "@/lib/types";
 import { prepareImage } from "@/lib/image";
+import { pdfFirstPageToImage } from "@/lib/pdf";
 import {
   addTransaction,
   addTransactions,
@@ -34,7 +35,16 @@ import { MonthSelector } from "@/components/MonthSelector";
 import { Toast } from "@/components/Toast";
 import { AlertIcon, RefreshIcon } from "@/components/icons";
 
-type Stage = "idle" | "extracting" | "review" | "error";
+type Stage = "idle" | "extracting" | "review" | "manual" | "error";
+
+const BLANK_RESULT: ExtractionResult = {
+  merchant: null,
+  date: null,
+  total: null,
+  currency: "IDR",
+  category: "Other",
+  items: [],
+};
 
 export default function Home() {
   const [stage, setStage] = useState<Stage>("idle");
@@ -83,14 +93,25 @@ export default function Home() {
     setStage("extracting");
     setError("");
     try {
-      const { full, thumb } = await prepareImage(file);
+      // PDF e-receipts: render page 1 to an image, then use the same pipeline.
+      const imageFile =
+        file.type === "application/pdf" ? await pdfFirstPageToImage(file) : file;
+      const { full, thumb } = await prepareImage(imageFile);
       setPreview(thumb);
       setFullImage(full);
       await runExtraction(full);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't read that image.");
+      setError(e instanceof Error ? e.message : "Couldn't read that file.");
       setStage("error");
     }
+  }
+
+  function handleManual() {
+    setResult(BLANK_RESULT);
+    setPreview("");
+    setFullImage("");
+    setError("");
+    setStage("manual");
   }
 
   function handleSave(tx: Transaction) {
@@ -155,7 +176,9 @@ export default function Home() {
 
       <main className="mt-10 flex-1">
         <section className="rounded-xl border border-border bg-bg p-5 shadow-[0_1px_3px_rgba(20,20,40,0.04)] sm:p-7">
-          {stage === "idle" && <ReceiptUploader onSelect={handleSelect} />}
+          {stage === "idle" && (
+            <ReceiptUploader onSelect={handleSelect} onManual={handleManual} />
+          )}
 
           {stage === "extracting" && (
             <ProcessingState preview={preview || fullImage} />
@@ -167,6 +190,16 @@ export default function Home() {
               preview={preview || fullImage}
               onSave={handleSave}
               onRetake={reset}
+            />
+          )}
+
+          {stage === "manual" && result && (
+            <ReviewCard
+              result={result}
+              preview=""
+              onSave={handleSave}
+              onRetake={reset}
+              manual
             />
           )}
 

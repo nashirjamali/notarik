@@ -47,7 +47,7 @@ Rules:
 - "merchant" is the shop/payee/description. Use null if there is none.
 - "date": parse any date format (e.g. 18/06/2026, 2026-06-18, "18 Jun 2026") into YYYY-MM-DD. Use null if absent or unparseable.
 - "category": choose the single best fit from the six values. Map foreign or free-text categories sensibly (e.g. "Makan"/"Restoran" -> Dining, "Belanja"/"Supermarket" -> Groceries, "Transportasi"/"Bensin" -> Transport, "Tagihan" -> Bills). If unsure, "Other".
-- "items": only if the row clearly lists line items; otherwise return [].
+- "items": only if the row clearly lists line items; otherwise return []. Each item's "price" is the line total actually charged for that item (after any discount, quantity/weight already included), not the per-unit price.
 - Map ONLY data present in the rows. Never invent expenses.
 Return the JSON array only.`;
 
