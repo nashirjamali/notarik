@@ -1,3 +1,4 @@
+import { requireAuth } from "@/lib/auth-request";
 import { IMPORT_PROMPT, parseImport } from "@/lib/importer";
 
 export const runtime = "nodejs";
@@ -17,6 +18,9 @@ function err(message: string, code: string, status: number): Response {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const denied = await requireAuth();
+  if (denied) return denied;
+
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return err(

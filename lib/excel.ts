@@ -1,45 +1,68 @@
 import * as XLSX from "xlsx";
 import { formatDate } from "./format";
-import type { Transaction } from "./types";
+import type { Item, Transaction } from "./types";
 
 const SHEET_NAME = "Expenses";
 
-/** Flatten a transaction's line items into one human-readable cell. */
-function itemsToCell(tx: Transaction): string {
-  return tx.items
-    .map((it) => {
-      const qty = it.qty && it.qty > 1 ? `${it.qty}× ` : "";
-      const price = it.price != null ? ` (${it.price})` : "";
-      return `${qty}${it.name}${price}`;
-    })
-    .join("; ");
+function unitPrice(item: Item): number | null {
+  const total = item.price;
+  const qty = item.qty;
+  if (total == null || qty == null || qty <= 0) return null;
+  return Math.round(total / qty);
 }
 
-/**
- * Export all transactions to a downloadable .xlsx. Columns are human-first
- * (Date, Merchant, …) so the file reads as a normal expense sheet — and still
- * re-imports cleanly because the AI importer maps any header layout.
- */
-export function exportTransactions(txs: Transaction[]): void {
-  const rows = txs.map((tx) => ({
+function itemRows(tx: Transaction) {
+  const loggedAt = formatDate(tx.createdAt.slice(0, 10));
+  if (tx.items.length === 0) {
+    return [
+      {
+        Date: tx.date,
+        Merchant: tx.merchant,
+        Item: "",
+        Qty: null as number | null,
+        Price: null as number | null,
+        Total: tx.total,
+        Category: tx.category,
+        Currency: tx.currency,
+        "Logged at": loggedAt,
+      },
+    ];
+  }
+  return tx.items.map((item) => ({
     Date: tx.date,
     Merchant: tx.merchant,
+    Item: item.name,
+    Qty: item.qty ?? null,
+    Price: unitPrice(item),
+    Total: item.price ?? null,
     Category: tx.category,
-    Total: tx.total,
     Currency: tx.currency,
-    Items: itemsToCell(tx),
-    "Logged at": formatDate(tx.createdAt.slice(0, 10)),
+    "Logged at": loggedAt,
   }));
+}
+
+export function exportTransactions(txs: Transaction[]): void {
+  const rows = txs
+    .flatMap(itemRows)
+    .sort((a, b) => {
+      const byDate = a.Date.localeCompare(b.Date);
+      if (byDate !== 0) return byDate;
+      const byMerchant = a.Merchant.localeCompare(b.Merchant);
+      if (byMerchant !== 0) return byMerchant;
+      return a.Item.localeCompare(b.Item);
+    });
 
   const ws = XLSX.utils.json_to_sheet(rows);
   ws["!cols"] = [
-    { wch: 12 }, // Date
-    { wch: 28 }, // Merchant
-    { wch: 12 }, // Category
-    { wch: 12 }, // Total
-    { wch: 9 }, // Currency
-    { wch: 48 }, // Items
-    { wch: 14 }, // Logged at
+    { wch: 12 },
+    { wch: 28 },
+    { wch: 32 },
+    { wch: 8 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 9 },
+    { wch: 14 },
   ];
 
   const wb = XLSX.utils.book_new();

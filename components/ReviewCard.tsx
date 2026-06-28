@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { ExtractionResult, Item, Transaction } from "@/lib/types";
 import { formatAmount, formatIDR, parseAmount, todayISO } from "@/lib/format";
-import { newId } from "@/lib/storage";
+import { newId } from "@/lib/id";
 import { CategoryPicker } from "./CategoryPicker";
 import {
   AlertIcon,

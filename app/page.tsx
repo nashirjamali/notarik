@@ -1,18 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ExtractionResult, Transaction } from "@/lib/types";
 import { prepareImage } from "@/lib/image";
 import { pdfFirstPageToImage } from "@/lib/pdf";
-import {
-  addTransaction,
-  addTransactions,
-  deleteTransaction,
-  loadBudget,
-  loadTransactions,
-  replaceTransactions,
-  saveBudget,
-} from "@/lib/storage";
 import {
   type Period,
   currentMonthKey,
@@ -46,7 +38,22 @@ const BLANK_RESULT: ExtractionResult = {
   items: [],
 };
 
+async function readTransactions(): Promise<Transaction[]> {
+  const res = await fetch("/api/transactions");
+  if (!res.ok) throw new Error("Could not load expenses.");
+  const data = await res.json();
+  return Array.isArray(data.transactions) ? data.transactions : [];
+}
+
+async function readBudget(): Promise<number | null> {
+  const res = await fetch("/api/budget");
+  if (!res.ok) throw new Error("Could not load budget.");
+  const data = await res.json();
+  return typeof data.monthlyTotal === "number" ? data.monthlyTotal : null;
+}
+
 export default function Home() {
+  const router = useRouter();
   const [stage, setStage] = useState<Stage>("idle");
   const [preview, setPreview] = useState<string>("");
   const [fullImage, setFullImage] = useState<string>("");
@@ -56,14 +63,25 @@ export default function Home() {
   const [saved, setSaved] = useState<Transaction[]>([]);
   const [budget, setBudget] = useState<number | null>(null);
   const [period, setPeriod] = useState<Period>("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mount-time hydration from localStorage. Deliberately not a lazy
-    // initializer: that would render device data on the server-empty first
-    // pass and cause a hydration mismatch.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSaved(loadTransactions());
-    setBudget(loadBudget());
+    let cancelled = false;
+    (async () => {
+      try {
+        const [txs, nextBudget] = await Promise.all([readTransactions(), readBudget()]);
+        if (cancelled) return;
+        setSaved(txs);
+        setBudget(nextBudget);
+      } catch {
+        if (!cancelled) setToast("Could not load your saved data.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function runExtraction(image: string) {
@@ -93,7 +111,6 @@ export default function Home() {
     setStage("extracting");
     setError("");
     try {
-      // PDF e-receipts: render page 1 to an image, then use the same pipeline.
       const imageFile =
         file.type === "application/pdf" ? await pdfFirstPageToImage(file) : file;
       const { full, thumb } = await prepareImage(imageFile);
@@ -114,24 +131,83 @@ export default function Home() {
     setStage("manual");
   }
 
-  function handleSave(tx: Transaction) {
-    const list = addTransaction(tx);
-    setSaved(list);
-    reset();
-    setToast(`Saved ${formatIDR(tx.total)} to ${tx.category}`);
+  async function handleSave(tx: Transaction) {
+    try {
+      const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tx),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data?.error ?? "Could not save expense.");
+        return;
+      }
+      setSaved(Array.isArray(data.transactions) ? data.transactions : []);
+      reset();
+      setToast(`Saved ${formatIDR(tx.total)} to ${tx.category}`);
+    } catch {
+      setToast("Could not save expense.");
+    }
   }
 
-  function handleDelete(id: string) {
-    setSaved(deleteTransaction(id));
-    setToast("Expense deleted");
+  async function handleDelete(id: string) {
+    try {
+      const res = await fetch(`/api/transactions?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data?.error ?? "Could not delete expense.");
+        return;
+      }
+      setSaved(Array.isArray(data.transactions) ? data.transactions : []);
+      setToast("Expense deleted");
+    } catch {
+      setToast("Could not delete expense.");
+    }
   }
 
-  function handleBudget(next: number | null) {
-    setBudget(saveBudget(next));
+  async function handleBudget(next: number | null) {
+    try {
+      const res = await fetch("/api/budget", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monthlyTotal: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data?.error ?? "Could not save budget.");
+        return;
+      }
+      setBudget(typeof data.monthlyTotal === "number" ? data.monthlyTotal : null);
+    } catch {
+      setToast("Could not save budget.");
+    }
   }
 
-  function handleImport(rows: Transaction[], mode: "merge" | "replace") {
-    setSaved(mode === "replace" ? replaceTransactions(rows) : addTransactions(rows));
+  async function handleImport(rows: Transaction[], mode: "merge" | "replace") {
+    try {
+      const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, transactions: rows }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data?.error ?? "Could not import expenses.");
+        return;
+      }
+      setSaved(Array.isArray(data.transactions) ? data.transactions : []);
+    } catch {
+      setToast("Could not import expenses.");
+    }
+  }
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
   }
 
   function reset() {
@@ -144,7 +220,6 @@ export default function Home() {
 
   const total = saved.reduce((s, t) => s + t.total, 0);
   const months = listMonths(saved);
-  // Guard against a stale selection after the underlying month disappears.
   const activePeriod: Period =
     period === "all" || months.some((m) => m.key === period) ? period : "all";
   const shownTxs = periodTxs(saved, activePeriod);
@@ -152,6 +227,14 @@ export default function Home() {
   const budgetMonthTxs = filterByMonth(saved, budgetMonthKey);
   const budgetMonthLabel =
     activePeriod === "all" ? "This month" : monthLabel(activePeriod);
+
+  if (loading) {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-2xl items-center justify-center px-5 py-8">
+        <p className="text-sm text-muted">Loading your expenses…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 py-8 sm:py-12">
@@ -164,14 +247,23 @@ export default function Home() {
             Notarik
           </span>
         </div>
-        {saved.length > 0 && (
-          <div className="text-right">
-            <p className="nums text-sm font-medium text-ink">{formatIDR(total)}</p>
-            <p className="text-xs text-muted">
-              {saved.length} expense{saved.length > 1 ? "s" : ""} logged
-            </p>
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          {saved.length > 0 && (
+            <div className="text-right">
+              <p className="nums text-sm font-medium text-ink">{formatIDR(total)}</p>
+              <p className="text-xs text-muted">
+                {saved.length} expense{saved.length > 1 ? "s" : ""} logged
+              </p>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-md border border-border-strong bg-bg px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="mt-10 flex-1">
@@ -242,8 +334,7 @@ export default function Home() {
         {stage === "idle" && saved.length === 0 && (
           <>
             <p className="mt-6 text-center text-xs leading-relaxed text-muted">
-              Your receipts are read on the server and never stored there.
-              Expenses are saved on this device only.
+              Receipts are read on the server. Your expenses are saved in the database.
             </p>
             <div className="mt-8">
               <BackupBar txs={saved} onApply={handleImport} onToast={setToast} />

@@ -1,3 +1,4 @@
+import { requireAuth } from "@/lib/auth-request";
 import { EXTRACTION_PROMPT, parseExtraction } from "@/lib/extraction";
 
 export const runtime = "nodejs";
@@ -18,6 +19,9 @@ function err(message: string, code: string, status: number): Response {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const denied = await requireAuth();
+  if (denied) return denied;
+
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return err(
@@ -49,8 +53,7 @@ export async function POST(request: Request): Promise<Response> {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        // Optional attribution headers OpenRouter recommends.
-        "HTTP-Referer": "https://notarik.app",
+        "HTTP-Referer": "https://notarik.vercel.app",
         "X-Title": "Notarik",
       },
       body: JSON.stringify({

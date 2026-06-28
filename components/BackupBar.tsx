@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { exportTransactions, readSpreadsheet } from "@/lib/excel";
 import type { ImportedRow } from "@/lib/importer";
 import { todayISO } from "@/lib/format";
-import { newId } from "@/lib/storage";
+import { newId } from "@/lib/id";
 import type { Transaction } from "@/lib/types";
 import { AlertIcon, RefreshIcon, UploadIcon } from "./icons";
 
