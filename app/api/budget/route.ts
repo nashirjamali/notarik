@@ -4,11 +4,11 @@ import { loadBudget, saveBudget } from "@/lib/data";
 export const runtime = "nodejs";
 
 export async function GET(): Promise<Response> {
-  const denied = await requireAuth();
-  if (denied) return denied;
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
 
   try {
-    const monthlyTotal = await loadBudget();
+    const monthlyTotal = await loadBudget(auth.supabase);
     return Response.json({ monthlyTotal });
   } catch (err) {
     console.error("load budget", err);
@@ -20,8 +20,8 @@ export async function GET(): Promise<Response> {
 }
 
 export async function PUT(request: Request): Promise<Response> {
-  const denied = await requireAuth();
-  if (denied) return denied;
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
 
   let body: { monthlyTotal?: unknown };
   try {
@@ -42,7 +42,7 @@ export async function PUT(request: Request): Promise<Response> {
   }
 
   try {
-    const saved = await saveBudget(monthlyTotal);
+    const saved = await saveBudget(auth.supabase, auth.user.id, monthlyTotal);
     return Response.json({ monthlyTotal: saved });
   } catch (err) {
     console.error("save budget", err);

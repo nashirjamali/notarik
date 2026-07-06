@@ -46,3 +46,5 @@ next-env.d.ts
 # tooling
 .impeccable/live
 .claude/live
+*storybook.log
+storybook-static

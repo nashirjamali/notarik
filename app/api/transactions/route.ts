@@ -26,11 +26,11 @@ function isTransaction(value: unknown): value is Transaction {
 }
 
 export async function GET(): Promise<Response> {
-  const denied = await requireAuth();
-  if (denied) return denied;
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
 
   try {
-    const transactions = await listTransactions();
+    const transactions = await listTransactions(auth.supabase);
     return Response.json({ transactions });
   } catch (err) {
     console.error("list transactions", err);
@@ -42,8 +42,8 @@ export async function GET(): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const denied = await requireAuth();
-  if (denied) return denied;
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
 
   let body: unknown;
   try {
@@ -69,8 +69,8 @@ export async function POST(request: Request): Promise<Response> {
     try {
       const transactions =
         payload.mode === "replace"
-          ? await replaceTransactions(txs)
-          : await mergeTransactions(txs);
+          ? await replaceTransactions(auth.supabase, auth.user.id, txs)
+          : await mergeTransactions(auth.supabase, auth.user.id, txs);
       return Response.json({ transactions });
     } catch (err) {
       console.error("bulk transactions", err);
@@ -86,8 +86,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    await insertTransaction(payload);
-    const transactions = await listTransactions();
+    await insertTransaction(auth.supabase, auth.user.id, payload);
+    const transactions = await listTransactions(auth.supabase);
     return Response.json({ transactions });
   } catch (err) {
     console.error("insert transaction", err);
@@ -99,8 +99,8 @@ export async function POST(request: Request): Promise<Response> {
 }
 
 export async function DELETE(request: Request): Promise<Response> {
-  const denied = await requireAuth();
-  if (denied) return denied;
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
 
   const id = new URL(request.url).searchParams.get("id");
   if (!id) {
@@ -108,11 +108,11 @@ export async function DELETE(request: Request): Promise<Response> {
   }
 
   try {
-    const removed = await deleteTransaction(id);
+    const removed = await deleteTransaction(auth.supabase, id);
     if (!removed) {
       return Response.json({ error: "Expense not found.", code: "not_found" }, { status: 404 });
     }
-    const transactions = await listTransactions();
+    const transactions = await listTransactions(auth.supabase);
     return Response.json({ transactions });
   } catch (err) {
     console.error("delete transaction", err);

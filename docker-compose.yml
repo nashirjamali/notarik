@@ -1,22 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: notarik-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: notarik
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-notarik}
-      POSTGRES_DB: notarik
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U notarik -d notarik"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - notarik
-
   notarik:
     build:
       context: .
@@ -24,17 +6,12 @@ services:
     image: notarik:latest
     container_name: notarik
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
       - NODE_ENV=production
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - OPENROUTER_MODEL=${OPENROUTER_MODEL:-google/gemini-2.5-flash}
-      - DATABASE_URL=postgresql://notarik:${POSTGRES_PASSWORD:-notarik}@db:5432/notarik
-      - AUTH_USERNAME=${AUTH_USERNAME}
-      - AUTH_PASSWORD=${AUTH_PASSWORD}
-      - AUTH_SECRET=${AUTH_SECRET}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     labels:
       - traefik.enable=true
       - traefik.docker.network=notarik
@@ -52,9 +29,6 @@ services:
       - traefik.http.services.notarik.loadbalancer.server.port=3000
     networks:
       - notarik
-
-volumes:
-  pgdata:
 
 networks:
   notarik:

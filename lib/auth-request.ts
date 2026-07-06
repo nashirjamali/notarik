@@ -1,11 +1,29 @@
-import { cookies } from "next/headers";
-import { SESSION_COOKIE, verifySessionToken } from "./auth-session";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { createClient } from "./supabase/server";
 
-export async function requireAuth(): Promise<Response | null> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (!token || !(await verifySessionToken(token))) {
-    return Response.json({ error: "Unauthorized", code: "unauthorized" }, { status: 401 });
+type AuthSuccess = {
+  user: User;
+  supabase: SupabaseClient;
+};
+
+type AuthFailure = {
+  error: Response;
+};
+
+export type AuthResult = AuthSuccess | AuthFailure;
+
+export async function requireAuth(): Promise<AuthResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return {
+      error: Response.json({ error: "Unauthorized", code: "unauthorized" }, { status: 401 }),
+    };
   }
-  return null;
+
+  return { user, supabase };
 }

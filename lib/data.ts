@@ -1,140 +1,156 @@
-import { ensureDb } from "./db";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Transaction } from "./types";
 
 type TransactionRow = {
   id: string;
   merchant: string;
-  date: Date | string;
+  date: string;
   total: number;
   currency: "IDR";
   category: string;
   items: unknown;
-  created_at: Date;
+  created_at: string;
   image_thumb: string | null;
 };
-
-function formatDate(value: Date | string): string {
-  if (typeof value === "string") return value.slice(0, 10);
-  return value.toISOString().slice(0, 10);
-}
 
 function rowToTransaction(row: TransactionRow): Transaction {
   return {
     id: row.id,
     merchant: row.merchant,
-    date: formatDate(row.date),
+    date: row.date.slice(0, 10),
     total: row.total,
     currency: "IDR",
     category: row.category as Transaction["category"],
     items: Array.isArray(row.items) ? (row.items as Transaction["items"]) : [],
-    createdAt: row.created_at.toISOString(),
+    createdAt: row.created_at,
     ...(row.image_thumb ? { imageThumb: row.image_thumb } : {}),
   };
 }
 
-export async function listTransactions(): Promise<Transaction[]> {
-  const db = await ensureDb();
-  const { rows } = await db.query<TransactionRow>(
-    `SELECT id, merchant, date, total, currency, category, items, created_at, image_thumb
-     FROM transactions
-     ORDER BY created_at DESC`,
-  );
-  return rows.map(rowToTransaction);
+export async function listTransactions(supabase: SupabaseClient): Promise<Transaction[]> {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("id, merchant, date, total, currency, category, items, created_at, image_thumb")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(rowToTransaction);
 }
 
-export async function insertTransaction(tx: Transaction): Promise<Transaction> {
-  const db = await ensureDb();
-  await db.query(
-    `INSERT INTO transactions (id, merchant, date, total, currency, category, items, created_at, image_thumb)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-    [
-      tx.id,
-      tx.merchant,
-      tx.date,
-      tx.total,
-      tx.currency,
-      tx.category,
-      JSON.stringify(tx.items),
-      tx.createdAt,
-      tx.imageThumb ?? null,
-    ],
-  );
+export async function insertTransaction(
+  supabase: SupabaseClient,
+  userId: string,
+  tx: Transaction,
+): Promise<Transaction> {
+  const { error } = await supabase.from("transactions").insert({
+    id: tx.id,
+    user_id: userId,
+    merchant: tx.merchant,
+    date: tx.date,
+    total: tx.total,
+    currency: tx.currency,
+    category: tx.category,
+    items: tx.items,
+    created_at: tx.createdAt,
+    image_thumb: tx.imageThumb ?? null,
+  });
+
+  if (error) throw error;
   return tx;
 }
 
-export async function deleteTransaction(id: string): Promise<boolean> {
-  const db = await ensureDb();
-  const { rowCount } = await db.query(`DELETE FROM transactions WHERE id = $1`, [id]);
-  return (rowCount ?? 0) > 0;
+export async function deleteTransaction(supabase: SupabaseClient, id: string): Promise<boolean> {
+  const { error, count } = await supabase
+    .from("transactions")
+    .delete({ count: "exact" })
+    .eq("id", id);
+
+  if (error) throw error;
+  return (count ?? 0) > 0;
 }
 
-export async function replaceTransactions(txs: Transaction[]): Promise<Transaction[]> {
-  const db = await ensureDb();
-  const client = await db.connect();
-  try {
-    await client.query("BEGIN");
-    await client.query("DELETE FROM transactions");
-    for (const tx of txs) {
-      await client.query(
-        `INSERT INTO transactions (id, merchant, date, total, currency, category, items, created_at, image_thumb)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [
-          tx.id,
-          tx.merchant,
-          tx.date,
-          tx.total,
-          tx.currency,
-          tx.category,
-          JSON.stringify(tx.items),
-          tx.createdAt,
-          tx.imageThumb ?? null,
-        ],
-      );
-    }
-    await client.query("COMMIT");
-    return txs;
-  } catch (err) {
-    await client.query("ROLLBACK");
-    throw err;
-  } finally {
-    client.release();
-  }
-}
+export async function replaceTransactions(
+  supabase: SupabaseClient,
+  userId: string,
+  txs: Transaction[],
+): Promise<Transaction[]> {
+  const { error: deleteError } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("user_id", userId);
 
-export async function mergeTransactions(txs: Transaction[]): Promise<Transaction[]> {
-  const db = await ensureDb();
-  for (const tx of txs) {
-    await db.query(
-      `INSERT INTO transactions (id, merchant, date, total, currency, category, items, created_at, image_thumb)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [
-        tx.id,
-        tx.merchant,
-        tx.date,
-        tx.total,
-        tx.currency,
-        tx.category,
-        JSON.stringify(tx.items),
-        tx.createdAt,
-        tx.imageThumb ?? null,
-      ],
-    );
-  }
-  return listTransactions();
-}
+  if (deleteError) throw deleteError;
 
-export async function loadBudget(): Promise<number | null> {
-  const db = await ensureDb();
-  const { rows } = await db.query<{ monthly_total: number | null }>(
-    `SELECT monthly_total FROM budget WHERE id = 1`,
+  if (txs.length === 0) return [];
+
+  const { error: insertError } = await supabase.from("transactions").insert(
+    txs.map((tx) => ({
+      id: tx.id,
+      user_id: userId,
+      merchant: tx.merchant,
+      date: tx.date,
+      total: tx.total,
+      currency: tx.currency,
+      category: tx.category,
+      items: tx.items,
+      created_at: tx.createdAt,
+      image_thumb: tx.imageThumb ?? null,
+    })),
   );
-  const val = rows[0]?.monthly_total;
+
+  if (insertError) throw insertError;
+  return txs;
+}
+
+export async function mergeTransactions(
+  supabase: SupabaseClient,
+  userId: string,
+  txs: Transaction[],
+): Promise<Transaction[]> {
+  if (txs.length > 0) {
+    const { error } = await supabase.from("transactions").insert(
+      txs.map((tx) => ({
+        id: tx.id,
+        user_id: userId,
+        merchant: tx.merchant,
+        date: tx.date,
+        total: tx.total,
+        currency: tx.currency,
+        category: tx.category,
+        items: tx.items,
+        created_at: tx.createdAt,
+        image_thumb: tx.imageThumb ?? null,
+      })),
+    );
+
+    if (error) throw error;
+  }
+
+  return listTransactions(supabase);
+}
+
+export async function loadBudget(supabase: SupabaseClient): Promise<number | null> {
+  const { data, error } = await supabase
+    .from("budget")
+    .select("monthly_total")
+    .maybeSingle();
+
+  if (error) throw error;
+  const val = data?.monthly_total;
   return typeof val === "number" && val > 0 ? val : null;
 }
 
-export async function saveBudget(monthlyTotal: number | null): Promise<number | null> {
-  const db = await ensureDb();
+export async function saveBudget(
+  supabase: SupabaseClient,
+  userId: string,
+  monthlyTotal: number | null,
+): Promise<number | null> {
   const next = monthlyTotal != null && monthlyTotal > 0 ? monthlyTotal : null;
-  await db.query(`UPDATE budget SET monthly_total = $1 WHERE id = 1`, [next]);
+  const { error } = await supabase.from("budget").upsert({
+    user_id: userId,
+    monthly_total: next,
+  });
+
+  if (error) throw error;
   return next;
 }
