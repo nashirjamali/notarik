@@ -1,22 +1,46 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "lime" | "primary" | "secondary" | "ghost";
+  variant?: "lime" | "primary" | "secondary" | "ghost" | "icon" | "text";
+  icon?: ReactNode;
+  iconPosition?: "left" | "right";
+  emphasis?: boolean;
 };
 
 const variants = {
-  lime: "bg-lime text-ink hover:bg-lime-hover",
-  primary: "bg-primary text-primary-ink hover:bg-primary-hover",
+  lime: "bg-lime px-6 py-3.5 text-ink hover:bg-lime-hover",
+  primary: "bg-primary px-6 py-3.5 text-primary-ink hover:bg-primary-hover",
   secondary:
-    "border border-border-strong bg-bg text-ink hover:bg-surface-2",
-  ghost: "text-ink hover:bg-surface-2",
+    "border border-border-strong bg-bg px-6 py-3.5 text-ink hover:bg-surface-2",
+  ghost: "px-6 py-3.5 text-ink hover:bg-surface-2",
+  icon: "h-14 min-w-14 bg-surface-2 px-0 text-ink hover:bg-border",
+  text: "bg-transparent px-0 py-0 text-sm font-extrabold",
 };
 
-export function Button({ variant = "lime", className = "", ...props }: Props) {
+export function Button({
+  variant = "lime",
+  icon,
+  iconPosition = "left",
+  emphasis = false,
+  className = "",
+  children,
+  ...props
+}: Props) {
+  const textTone =
+    variant === "text"
+      ? emphasis
+        ? "text-primary hover:text-primary-hover"
+        : "text-muted hover:text-primary"
+      : "";
+
   return (
     <button
-      className={`inline-flex items-center cursor-pointer justify-center gap-2 rounded-md px-6 py-3.5 text-sm font-extrabold outline-none transition-colors focus-visible:shadow-[0_0_0_3px_var(--color-primary-soft)] disabled:pointer-events-none disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-md outline-none transition-colors focus-visible:shadow-[0_0_0_3px_var(--color-primary-soft)] disabled:pointer-events-none disabled:opacity-50 ${variants[variant]} ${textTone} ${variant !== "text" ? "text-sm font-extrabold" : ""} ${className}`}
       {...props}
-    />
+    >
+      {icon && iconPosition === "left" ? icon : null}
+      {children}
+      {icon && iconPosition === "right" ? icon : null}
+    </button>
   );
 }

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { ChevronRightIcon } from "../../components/icons";
 import { Button } from "../../components/ui/Button";
 
 const meta = {
@@ -8,7 +9,7 @@ const meta = {
   argTypes: {
     variant: {
       control: "select",
-      options: ["lime", "primary", "secondary", "ghost"],
+      options: ["lime", "primary", "secondary", "ghost", "icon", "text"],
     },
     disabled: { control: "boolean" },
   },
@@ -50,4 +51,36 @@ export const AllVariants: Story = {
       <Button variant="ghost">Ghost</Button>
     </div>
   ),
+};
+
+export const WithIcon: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Button variant="lime" icon={<ChevronRightIcon size={16} />}>
+        Continue
+      </Button>
+      <Button variant="primary" icon={<ChevronRightIcon size={16} />} iconPosition="right">
+        Next
+      </Button>
+    </div>
+  ),
+};
+
+export const IconOnly: Story = {
+  render: () => (
+    <Button
+      variant="icon"
+      aria-label="Continue"
+      icon={<ChevronRightIcon size={16} />}
+      className="rounded-xl"
+    />
+  ),
+};
+
+export const Text: Story = {
+  args: { variant: "text", children: "Forget Password ?" },
+};
+
+export const TextEmphasis: Story = {
+  args: { variant: "text", emphasis: true, children: "Sign Up" },
 };
