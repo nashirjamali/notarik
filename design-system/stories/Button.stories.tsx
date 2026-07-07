@@ -9,7 +9,7 @@ const meta = {
   argTypes: {
     variant: {
       control: "select",
-      options: ["lime", "primary", "secondary", "ghost", "icon", "text"],
+      options: ["lime", "primary", "secondary", "ghost", "icon", "icon-circle", "profile", "text"],
     },
     disabled: { control: "boolean" },
   },
@@ -83,4 +83,25 @@ export const Text: Story = {
 
 export const TextEmphasis: Story = {
   args: { variant: "text", emphasis: true, children: "Sign Up" },
+};
+
+export const IconCircle: Story = {
+  render: () => (
+    <Button variant="icon-circle" aria-label="Search" icon={<ChevronRightIcon size={18} />} />
+  ),
+};
+
+export const Profile: Story = {
+  render: () => (
+    <Button
+      variant="profile"
+      icon={<ChevronRightIcon size={16} className="text-faint" />}
+      iconPosition="right"
+    >
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-ink">
+        AR
+      </span>
+      <span className="text-sm font-bold text-ink">Alex R.</span>
+    </Button>
+  ),
 };

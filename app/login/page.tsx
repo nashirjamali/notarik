@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { LogoMark } from "@/components/LogoMark";
 import { MarketingPanel } from "@/components/login/MarketingPanel";
 import {
   EnvelopeIcon,
   EyeIcon,
   EyeSlashIcon,
   LockIcon,
-  WalletIcon,
 } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -16,17 +16,6 @@ import { FormEvent, useEffect, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 
 type Mode = "sign-in" | "sign-up" | "forgot";
-
-function LogoMark() {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="grid size-9 place-items-center rounded-lg bg-primary">
-        <WalletIcon size={20} className="text-lime" />
-      </span>
-      <span className="text-lg font-bold tracking-tight text-primary">Notarik</span>
-    </div>
-  );
-}
 
 export default function LoginPage() {
   const router = useRouter();
