@@ -1,10 +1,9 @@
-import { cookies } from "next/headers";
-import { SESSION_COOKIE, verifySessionToken } from "./auth-session";
+import { createClient } from "./supabase/server";
 
 export async function requireAuth(): Promise<Response | null> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (!token || !(await verifySessionToken(token))) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims) {
     return Response.json({ error: "Unauthorized", code: "unauthorized" }, { status: 401 });
   }
   return null;

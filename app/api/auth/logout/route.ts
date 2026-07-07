@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-request";
-import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth-session";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
 export async function POST(): Promise<Response> {
-  const denied = await requireAuth();
-  if (denied) return denied;
-
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(SESSION_COOKIE, "", { ...sessionCookieOptions(), maxAge: 0 });
-  return res;
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  return NextResponse.json({ ok: true });
 }
