@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/auth-code-error"];
+const AUTH_PATHS = ["/login", "/signup"];
+const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback", "/auth/auth-code-error"];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -42,7 +43,7 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const authed = Boolean(data?.claims);
 
-  if (pathname === "/login") {
+  if (AUTH_PATHS.includes(pathname)) {
     if (authed) {
       const url = request.nextUrl.clone();
       url.pathname = "/";

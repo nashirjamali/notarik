@@ -7,6 +7,7 @@ import { todayISO } from "@/lib/format";
 import { newId } from "@/lib/id";
 import type { Transaction } from "@/lib/types";
 import { AlertIcon, RefreshIcon, UploadIcon } from "./icons";
+import { Button } from "@/components/ui";
 
 type ImportMode = "merge" | "replace";
 
@@ -97,7 +98,7 @@ export function BackupBar({ txs, onApply, onToast }: Props) {
   return (
     <section
       aria-labelledby="backup-heading"
-      className="rounded-xl border border-border bg-surface p-5 sm:p-6"
+      className="rounded-xl border border-neutral-200 bg-neutral-100 p-5 sm:p-6"
     >
       <input
         ref={inputRef}
@@ -113,94 +114,94 @@ export function BackupBar({ txs, onApply, onToast }: Props) {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 id="backup-heading" className="text-sm font-medium text-ink">
+          <h2 id="backup-heading" className="text-sm font-medium text-neutral-900">
             Backup &amp; restore
           </h2>
-          <p className="mt-0.5 max-w-[48ch] text-xs leading-relaxed text-muted">
+          <p className="mt-0.5 max-w-[48ch] text-xs leading-relaxed text-neutral-500">
             Save a spreadsheet copy, or import one in any layout — the importer
             reads the columns for you.
           </p>
         </div>
 
         {phase.kind === "working" ? (
-          <p className="inline-flex shrink-0 items-center gap-2 text-sm text-muted">
+          <p className="inline-flex shrink-0 items-center gap-2 text-sm text-neutral-500">
             <RefreshIcon size={16} className="animate-spin" />
             Reading your file…
           </p>
         ) : (
           <div className="flex shrink-0 gap-2.5">
-            <button
+            <Button
               type="button"
+              variant="white"
+              size="small"
               onClick={handleExport}
               disabled={txs.length === 0}
-              className="rounded-md border border-border-strong bg-bg px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Export
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="white"
+              size="small"
               onClick={() => inputRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-md border border-border-strong bg-bg px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
+              iconLeft={<UploadIcon size={16} />}
             >
-              <UploadIcon size={16} />
               Import
-            </button>
+            </Button>
           </div>
         )}
       </div>
 
       {phase.kind === "review" && (
-        <div className="mt-5 rounded-lg border border-border bg-bg p-4">
-          <p className="text-sm text-ink">
+        <div className="mt-5 rounded-lg border border-neutral-200 bg-white p-4">
+          <p className="text-sm text-neutral-900">
             Found{" "}
             <span className="font-medium">
               {phase.rows.length} expense{phase.rows.length > 1 ? "s" : ""}
             </span>{" "}
             in that file
             {phase.skipped > 0 && (
-              <span className="text-muted">
+              <span className="text-neutral-500">
                 {" "}
                 · {phase.skipped} row{phase.skipped > 1 ? "s" : ""} skipped
               </span>
             )}
             .
           </p>
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-xs text-neutral-500">
             {txs.length > 0
               ? "Add them to your current expenses, or replace everything with this file?"
               : "Add them to your expenses?"}
           </p>
           <div className="mt-4 flex flex-col-reverse gap-2.5 sm:flex-row sm:items-center sm:justify-end">
-            <button
+            <Button
               type="button"
+              variant="stroke"
+              size="small"
               onClick={() => setPhase({ kind: "idle" })}
-              className="rounded-md px-3.5 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink"
             >
               Cancel
-            </button>
+            </Button>
             {txs.length > 0 && (
-              <button
+              <Button
                 type="button"
+                variant="stroke-red"
+                size="small"
                 onClick={() => apply("replace")}
-                className="rounded-md border border-border-strong bg-bg px-3.5 py-2 text-sm font-medium text-danger transition-colors hover:bg-danger-soft"
               >
                 Replace all
-              </button>
+              </Button>
             )}
-            <button
-              type="button"
-              onClick={() => apply("merge")}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-ink transition-colors hover:bg-primary-hover"
-            >
+            <Button type="button" size="small" onClick={() => apply("merge")}>
               {txs.length > 0 ? "Add to existing" : "Import"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {phase.kind === "error" && (
-        <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-border bg-danger-soft p-3.5 text-sm text-ink">
-          <span className="mt-0.5 shrink-0 text-danger">
+        <div className="mt-5 flex items-start gap-2.5 rounded-xl bg-danger-100/25 p-3.5 text-sm text-danger-500">
+          <span className="mt-0.5 shrink-0">
             <AlertIcon size={16} />
           </span>
           <div className="flex-1">
@@ -208,7 +209,7 @@ export function BackupBar({ txs, onApply, onToast }: Props) {
             <button
               type="button"
               onClick={() => setPhase({ kind: "idle" })}
-              className="mt-1.5 text-xs font-medium text-muted underline-offset-2 hover:text-ink hover:underline"
+              className="mt-1.5 text-xs font-medium underline-offset-2 hover:underline"
             >
               Dismiss
             </button>

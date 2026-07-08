@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { ExtractionResult, Item, Transaction } from "@/lib/types";
 import { formatAmount, formatIDR, parseAmount, todayISO } from "@/lib/format";
 import { newId } from "@/lib/id";
+import { Button, Checkbox } from "@/components/ui";
 import { CategoryPicker } from "./CategoryPicker";
 import {
   AlertIcon,
@@ -32,6 +33,8 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
   const [category, setCategory] = useState(result.category);
   const [itemsOpen, setItemsOpen] = useState(false);
   const [items, setItems] = useState<Item[]>(result.items);
+  const [tagsText, setTagsText] = useState("");
+  const [recurring, setRecurring] = useState(false);
 
   const total = parseAmount(totalText);
   const totalUnread = !manual && result.total == null;
@@ -55,6 +58,21 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
     if (!canSave || total == null) return;
     // Drop blank rows; a kept item needs at least a name.
     const cleanItems = items.filter((it) => it.name.trim().length > 0);
+    const cleanTags = Array.from(
+      new Set(
+        tagsText
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0),
+      ),
+    );
+    // Flag entries the AI misread so the recap can surface where extraction needs a human fix.
+    const wasEdited =
+      !manual &&
+      (merchant.trim() !== (result.merchant ?? "") ||
+        date !== (result.date ?? todayISO()) ||
+        total !== result.total ||
+        category !== result.category);
     onSave({
       id: newId(),
       merchant: merchant.trim(),
@@ -65,6 +83,9 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
       items: cleanItems,
       createdAt: new Date().toISOString(),
       imageThumb: preview,
+      ...(cleanTags.length > 0 ? { tags: cleanTags } : {}),
+      ...(recurring ? { recurring: true } : {}),
+      ...(wasEdited ? { wasEdited: true } : {}),
     });
   }
 
@@ -72,10 +93,10 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-serif text-2xl tracking-tight text-ink">
+          <h2 className="font-serif text-2xl tracking-tight text-neutral-900">
             {manual ? "Add an expense" : "Check the details"}
           </h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-neutral-500">
             {manual
               ? "Type the details, then save."
               : "We read this from your receipt. Fix anything that’s off, then save."}
@@ -85,7 +106,7 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
           <button
             type="button"
             onClick={onRetake}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900"
           >
             <RefreshIcon size={16} />
             <span className="hidden sm:inline">Retake</span>
@@ -106,26 +127,26 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
           <img
             src={preview}
             alt="The receipt you uploaded"
-            className="hidden w-full rounded-lg border border-border object-cover sm:block"
+            className="hidden w-full rounded-lg border border-neutral-200 object-cover sm:block"
           />
         )}
 
         <div className="flex flex-col gap-5">
           {/* The total — the figure that matters most */}
-          <div className="rounded-lg border border-border bg-surface p-4">
+          <div className="rounded-lg border border-neutral-200 bg-neutral-100 p-4">
             <label
               htmlFor="total"
-              className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted"
+              className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-neutral-500"
             >
               Final total
               {totalUnread && (
-                <span className="inline-flex items-center gap-1 text-danger">
+                <span className="inline-flex items-center gap-1 text-danger-500">
                   <AlertIcon size={13} /> not read — please enter
                 </span>
               )}
             </label>
             <div className="mt-1.5 flex items-baseline gap-1.5">
-              <span className="font-serif text-2xl text-muted">Rp</span>
+              <span className="font-serif text-2xl text-neutral-500">Rp</span>
               <input
                 id="total"
                 inputMode="numeric"
@@ -133,10 +154,10 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
                 onChange={(e) => setTotalText(e.target.value.replace(/[^\d]/g, ""))}
                 placeholder="0"
                 aria-invalid={!canSave && totalText.length > 0}
-                className="nums w-full min-w-0 bg-transparent font-serif text-4xl tracking-tight text-ink outline-none placeholder:text-border-strong"
+                className="nums w-full min-w-0 bg-transparent font-serif text-4xl tracking-tight text-neutral-900 outline-none placeholder:text-neutral-400"
               />
             </div>
-            <p className="mt-1.5 text-xs text-muted">
+            <p className="mt-1.5 text-xs text-neutral-500">
               Make sure this is the amount paid — not the subtotal before tax &amp; service.
             </p>
           </div>
@@ -164,24 +185,41 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
 
           {/* Category */}
           <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500">
               Category
             </p>
             <CategoryPicker value={category} onChange={setCategory} />
           </div>
 
+          {/* Tags — optional, free-form, comma separated */}
+          <Field label="Tags (optional)">
+            <input
+              value={tagsText}
+              onChange={(e) => setTagsText(e.target.value)}
+              placeholder="e.g. work travel, date night"
+              className="field-input"
+            />
+          </Field>
+
+          {/* Recurring — surfaces a quick-add suggestion in future months */}
+          <Checkbox
+            checked={recurring}
+            onChange={(e) => setRecurring(e.target.checked)}
+            label="This repeats every month (e.g. rent, subscription)"
+          />
+
           {/* Items — editable when typed by hand, read-only when read from a photo */}
           {manual ? (
             <div>
               <div className="mb-2 flex items-baseline justify-between gap-2">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
                   Items <span className="normal-case tracking-normal">(optional)</span>
                 </p>
                 {itemsTotal > 0 && (
                   <button
                     type="button"
                     onClick={() => setTotalText(String(itemsTotal))}
-                    className="nums text-xs font-medium text-primary transition-colors hover:text-primary-hover"
+                    className="nums text-xs font-medium text-primary-500 transition-colors hover:text-primary-600"
                   >
                     Sum {formatIDR(itemsTotal)} → set as total
                   </button>
@@ -199,8 +237,8 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
                         aria-label={`Item ${i + 1} name`}
                         className="field-input flex-1"
                       />
-                      <span className="flex items-center gap-1 rounded-md border border-border-strong bg-bg px-2.5 py-2">
-                        <span className="text-sm text-muted">Rp</span>
+                      <span className="flex items-center gap-1 rounded-md border border-neutral-400 bg-white px-2.5 py-2">
+                        <span className="text-sm text-neutral-500">Rp</span>
                         <input
                           inputMode="numeric"
                           value={it.price != null ? formatAmount(it.price) : ""}
@@ -211,14 +249,14 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
                           }
                           placeholder="0"
                           aria-label={`Item ${i + 1} price`}
-                          className="nums w-24 bg-transparent text-right text-sm text-ink outline-none placeholder:text-muted"
+                          className="nums w-24 bg-transparent text-right text-sm text-neutral-900 outline-none placeholder:text-neutral-500"
                         />
                       </span>
                       <button
                         type="button"
                         onClick={() => setItems((prev) => prev.filter((_, j) => j !== i))}
                         aria-label={`Remove item ${i + 1}`}
-                        className="shrink-0 rounded-md p-2 text-muted transition-colors hover:bg-danger-soft hover:text-danger"
+                        className="shrink-0 rounded-md p-2 text-neutral-500 transition-colors hover:bg-danger-100 hover:text-danger-500"
                       >
                         <XIcon size={16} />
                       </button>
@@ -230,7 +268,7 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
               <button
                 type="button"
                 onClick={() => setItems((prev) => [...prev, { name: "" }])}
-                className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border-strong px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-ink"
+                className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-neutral-400 px-3 py-2 text-sm font-medium text-neutral-500 transition-colors hover:border-primary-500 hover:text-neutral-900"
               >
                 <PlusIcon size={16} />
                 Add item
@@ -238,17 +276,17 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
             </div>
           ) : (
             items.length > 0 && (
-              <div className="rounded-lg border border-border">
+              <div className="rounded-lg border border-neutral-200">
                 <button
                   type="button"
                   onClick={() => setItemsOpen((o) => !o)}
                   aria-expanded={itemsOpen}
-                  className="flex w-full items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm transition-colors hover:bg-surface-2"
+                  className="flex w-full items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm transition-colors hover:bg-neutral-200"
                 >
-                  <span className="font-medium text-ink">
+                  <span className="font-medium text-neutral-900">
                     {items.length} item{items.length > 1 ? "s" : ""}
                   </span>
-                  <span className="flex items-center gap-2 text-muted">
+                  <span className="flex items-center gap-2 text-neutral-500">
                     {itemsTotal > 0 && (
                       <span className="nums text-xs">{formatIDR(itemsTotal)}</span>
                     )}
@@ -259,20 +297,20 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
                   </span>
                 </button>
                 {itemsOpen && (
-                  <ul className="border-t border-border px-4 py-2.5 text-sm">
+                  <ul className="border-t border-neutral-200 px-4 py-2.5 text-sm">
                     {items.map((it, i) => (
                       <li
                         key={i}
                         className="flex items-baseline justify-between gap-4 py-1.5"
                       >
-                        <span className="text-ink">
+                        <span className="text-neutral-900">
                           {it.qty && it.qty > 1 && (
-                            <span className="nums mr-1.5 text-muted">{it.qty}×</span>
+                            <span className="nums mr-1.5 text-neutral-500">{it.qty}×</span>
                           )}
                           {it.name}
                         </span>
                         {it.price != null && (
-                          <span className="nums shrink-0 text-muted">
+                          <span className="nums shrink-0 text-neutral-500">
                             {formatIDR(it.price)}
                           </span>
                         )}
@@ -288,40 +326,35 @@ export function ReviewCard({ result, preview, onSave, onRetake, manual }: Props)
 
       {/* Actions */}
       <div className="flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          onClick={onRetake}
-          className="rounded-md border border-border-strong bg-bg px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
-        >
+        <Button type="button" variant="stroke" onClick={onRetake}>
           {manual ? "Cancel" : "Start over"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={handleSave}
           disabled={!canSave}
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-ink transition-[background-color,transform] duration-150 hover:bg-primary-hover active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+          iconLeft={<CheckIcon size={18} />}
         >
-          <CheckIcon size={18} />
           Save expense
-        </button>
+        </Button>
       </div>
 
       <style>{`
         .field-input {
           width: 100%;
           border-radius: var(--radius-md);
-          border: 1px solid var(--color-border-strong);
-          background: var(--color-bg);
+          border: 1px solid var(--color-neutral-400);
+          background: var(--color-white);
           padding: 0.5rem 0.75rem;
           font-size: 0.9375rem;
-          color: var(--color-ink);
+          color: var(--color-neutral-900);
           transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .field-input::placeholder { color: var(--color-muted); }
+        .field-input::placeholder { color: var(--color-neutral-500); }
         .field-input:focus-visible {
           outline: none;
-          border-color: var(--color-primary);
-          box-shadow: 0 0 0 3px var(--color-primary-soft);
+          border-color: var(--color-primary-500);
+          box-shadow: 0 0 0 3px var(--color-primary-100);
         }
       `}</style>
     </div>
@@ -341,10 +374,10 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
+      <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-neutral-500">
         {label}
         {flagged && (
-          <span className="inline-flex items-center gap-1 normal-case tracking-normal text-warning">
+          <span className="inline-flex items-center gap-1 normal-case tracking-normal text-warning-500">
             <AlertIcon size={12} /> {flagText}
           </span>
         )}

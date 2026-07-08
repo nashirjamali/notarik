@@ -20,26 +20,26 @@ export function Recap({ txs, label }: { txs: Transaction[]; label: string }) {
   return (
     <section
       aria-labelledby="recap-heading"
-      className="rounded-xl border border-border bg-bg p-5 sm:p-7"
+      className="rounded-xl border border-neutral-200 bg-white p-5 sm:p-7"
     >
       <div className="flex items-baseline justify-between gap-4">
         <h2
           id="recap-heading"
-          className="font-serif text-xl tracking-tight text-ink"
+          className="font-serif text-xl tracking-tight text-neutral-900"
         >
           Where it went
         </h2>
-        <span className="text-xs text-muted">{label}</span>
+        <span className="text-xs text-neutral-500">{label}</span>
       </div>
 
       <div className="mt-6 flex flex-col items-center gap-7 sm:flex-row sm:items-center sm:gap-9">
         <div className="relative grid place-items-center">
           <DonutChart slices={slices} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted">
+            <span className="text-[0.6875rem] font-medium uppercase tracking-wide text-neutral-500">
               Total
             </span>
-            <span className="nums font-serif text-xl tracking-tight text-ink">
+            <span className="nums font-serif text-xl tracking-tight text-neutral-900">
               {formatIDR(total)}
             </span>
           </div>
@@ -55,17 +55,17 @@ export function Recap({ txs, label }: { txs: Transaction[]; label: string }) {
                     style={{ backgroundColor: CATEGORY_META[s.category].color }}
                     aria-hidden
                   />
-                  <span className="truncate text-sm text-ink">{s.category}</span>
-                  <span className="nums shrink-0 text-xs text-muted">
+                  <span className="truncate text-sm text-neutral-900">{s.category}</span>
+                  <span className="nums shrink-0 text-xs text-neutral-500">
                     {pct.format(s.share * 100)}%
                   </span>
                 </span>
-                <span className="nums shrink-0 text-sm font-medium text-ink">
+                <span className="nums shrink-0 text-sm font-medium text-neutral-900">
                   {formatIDR(s.total)}
                 </span>
               </div>
               <div
-                className="h-1 overflow-hidden rounded-full bg-surface-2"
+                className="h-1 overflow-hidden rounded-full bg-neutral-200"
                 aria-hidden
               >
                 <div

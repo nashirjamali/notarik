@@ -20,8 +20,8 @@ export function Toast({ message, onDismiss }: Props) {
       aria-live="polite"
       className="toast pointer-events-none fixed inset-x-0 bottom-5 z-[var(--z-toast)] flex justify-center px-4"
     >
-      <div className="pointer-events-auto inline-flex items-center gap-2.5 rounded-full border border-border bg-ink px-4 py-2.5 text-sm font-medium text-bg shadow-lg">
-        <span className="grid size-5 place-items-center rounded-full bg-success text-bg">
+      <div className="pointer-events-auto inline-flex items-center gap-2.5 rounded-full border border-neutral-200 bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg">
+        <span className="grid size-5 place-items-center rounded-full bg-success-500 text-white">
           <CheckIcon size={14} />
         </span>
         {message}

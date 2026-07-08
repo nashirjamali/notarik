@@ -30,8 +30,8 @@ export function CategoryPicker({ value, onChange }: Props) {
             onClick={() => onChange(cat)}
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors duration-150 ${
               selected
-                ? "border-primary bg-primary-soft font-medium text-ink"
-                : "border-border bg-bg text-muted hover:border-border-strong hover:text-ink"
+                ? "border-primary-500 bg-primary-100 font-medium text-neutral-900"
+                : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400 hover:text-neutral-900"
             }`}
           >
             <span

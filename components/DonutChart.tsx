@@ -49,7 +49,7 @@ export function DonutChart({ slices, size = 168 }: Props) {
         cy={cy}
         r={r}
         fill="none"
-        stroke="var(--color-surface-2)"
+        stroke="var(--color-neutral-200)"
         strokeWidth={stroke}
       />
       {segments.map(({ s, offset }) => {

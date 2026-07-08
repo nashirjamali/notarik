@@ -12,13 +12,13 @@ type Props = { preview: string };
 export function ProcessingState({ preview }: Props) {
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-2.5 text-sm font-medium text-primary">
+      <div className="flex items-center gap-2.5 text-sm font-medium text-primary-500">
         <ScanIcon size={18} className="animate-[pulse_1.6s_ease-in-out_infinite]" />
         <span>Reading your receipt…</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-[7rem_1fr] sm:items-start">
-        <div className="relative overflow-hidden rounded-lg border border-border bg-surface">
+        <div className="relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100">
           {/* base64 data URL — next/image can't optimize these */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -48,7 +48,7 @@ export function ProcessingState({ preview }: Props) {
         </div>
       </div>
 
-      <p className="text-xs text-muted">
+      <p className="text-xs text-neutral-500">
         This usually takes a few seconds. Keep this tab open.
       </p>
 
@@ -56,9 +56,9 @@ export function ProcessingState({ preview }: Props) {
         .shimmer {
           background: linear-gradient(
             100deg,
-            var(--color-surface-2) 30%,
-            var(--color-surface) 50%,
-            var(--color-surface-2) 70%
+            var(--color-neutral-200) 30%,
+            var(--color-neutral-100) 50%,
+            var(--color-neutral-200) 70%
           );
           background-size: 200% 100%;
           animation: shimmer 1.4s linear infinite;
@@ -70,8 +70,8 @@ export function ProcessingState({ preview }: Props) {
           position: absolute;
           inset-inline: 0;
           height: 2px;
-          background: var(--color-primary);
-          box-shadow: 0 0 12px 2px color-mix(in oklch, var(--color-primary) 60%, transparent);
+          background: var(--color-primary-500);
+          box-shadow: 0 0 12px 2px color-mix(in oklch, var(--color-primary-500) 60%, transparent);
           animation: sweep 1.8s var(--ease-out-quint) infinite;
         }
         @keyframes sweep {
@@ -81,7 +81,7 @@ export function ProcessingState({ preview }: Props) {
           100% { top: 96%; opacity: 0; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .shimmer { animation: none; background: var(--color-surface-2); }
+          .shimmer { animation: none; background: var(--color-neutral-200); }
           .scanline { animation: none; opacity: 0; }
         }
       `}</style>

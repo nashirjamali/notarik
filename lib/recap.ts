@@ -71,6 +71,39 @@ export function filterByMonth(txs: Transaction[], key: string): Transaction[] {
   return txs.filter((tx) => monthKeyOf(tx.date) === key);
 }
 
+/**
+ * Recurring expenses (rent, subscriptions) whose most recent instance predates
+ * the given month and hasn't been re-logged for it yet — one per merchant.
+ */
+export function dueRecurring(txs: Transaction[], monthKey: string): Transaction[] {
+  const latestByMerchant = new Map<string, Transaction>();
+  for (const tx of txs) {
+    if (!tx.recurring) continue;
+    const mk = monthKeyOf(tx.date);
+    if (!mk || mk >= monthKey) continue;
+    const existing = latestByMerchant.get(tx.merchant);
+    if (!existing || tx.date > existing.date) latestByMerchant.set(tx.merchant, tx);
+  }
+  const loggedThisMonth = new Set(
+    filterByMonth(txs, monthKey).map((tx) => tx.merchant),
+  );
+  return [...latestByMerchant.values()].filter((tx) => !loggedThisMonth.has(tx.merchant));
+}
+
+/** True when a transaction looks like a re-scan of an existing one (same merchant/date/total). */
+export function isLikelyDuplicate(
+  candidate: Pick<Transaction, "merchant" | "date" | "total">,
+  existing: Transaction[],
+): boolean {
+  const merchant = candidate.merchant.trim().toLowerCase();
+  return existing.some(
+    (tx) =>
+      tx.merchant.trim().toLowerCase() === merchant &&
+      tx.date === candidate.date &&
+      tx.total === candidate.total,
+  );
+}
+
 /** A period the dashboard can scope to: everything, or one month. */
 export type Period = "all" | string;
 

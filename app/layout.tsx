@@ -38,6 +38,12 @@ export default function RootLayout({
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full" suppressHydrationWarning>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark')}catch(e){}",
+          }}
+        />
         {children}
       </body>
     </html>

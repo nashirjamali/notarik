@@ -16,20 +16,20 @@ export function Projection({ txs }: { txs: Transaction[] }) {
   return (
     <section
       aria-labelledby="projection-heading"
-      className="rounded-xl border border-dashed border-border-strong bg-surface p-5 sm:p-6"
+      className="rounded-xl border border-dashed border-neutral-400 bg-neutral-100 p-5 sm:p-6"
     >
-      <div className="flex items-center gap-2 text-muted">
+      <div className="flex items-center gap-2 text-neutral-500">
         <TrendIcon size={18} />
         <h2
           id="projection-heading"
-          className="text-sm font-medium text-ink"
+          className="text-sm font-medium text-neutral-900"
         >
           If your pace holds
         </h2>
       </div>
 
       {!p.ready ? (
-        <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted">
+        <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-neutral-500">
           Not enough data yet. Once you&apos;ve logged about a week of receipts
           (at least 5 expenses across 7+ days), we&apos;ll estimate where your
           current pace is heading.
@@ -40,7 +40,7 @@ export function Projection({ txs }: { txs: Transaction[] }) {
             <Estimate label="In ~2 months" value={p.projected2m} />
             <Estimate label="In ~4 months" value={p.projected4m} />
           </div>
-          <p className="mt-4 max-w-[58ch] text-xs leading-relaxed text-muted">
+          <p className="mt-4 max-w-[58ch] text-xs leading-relaxed text-neutral-500">
             Estimated if your current pace continues —{" "}
             <span className="nums">{formatIDR(p.dailyRate)}</span>/day across{" "}
             <span className="nums">{p.daysCovered}</span> days. A straight-line
@@ -55,9 +55,9 @@ export function Projection({ txs }: { txs: Transaction[] }) {
 
 function Estimate({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg bg-bg px-4 py-3">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="nums mt-0.5 text-lg tracking-tight text-ink">
+    <div className="rounded-lg bg-white px-4 py-3">
+      <p className="text-xs text-neutral-500">{label}</p>
+      <p className="nums mt-0.5 text-lg tracking-tight text-neutral-900">
         ≈ {formatIDR(value)}
       </p>
     </div>

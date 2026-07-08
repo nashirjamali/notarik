@@ -25,6 +25,9 @@ export interface Transaction {
   items: Item[];
   createdAt: string; // ISO timestamp
   imageThumb?: string;
+  tags?: string[];
+  recurring?: boolean;
+  wasEdited?: boolean;
 }
 
 /**

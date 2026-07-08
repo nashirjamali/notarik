@@ -12,10 +12,13 @@ type TransactionRow = {
   items: unknown;
   created_at: string;
   image_thumb: string | null;
+  tags: string[] | null;
+  recurring: boolean | null;
+  was_edited: boolean | null;
 };
 
 const TRANSACTION_COLUMNS =
-  "id, merchant, date, total, currency, category, items, created_at, image_thumb";
+  "id, merchant, date, total, currency, category, items, created_at, image_thumb, tags, recurring, was_edited";
 
 async function currentUserId(supabase: SupabaseClient): Promise<string> {
   const { data } = await supabase.auth.getClaims();
@@ -35,6 +38,9 @@ function rowToTransaction(row: TransactionRow): Transaction {
     items: Array.isArray(row.items) ? (row.items as Transaction["items"]) : [],
     createdAt: new Date(row.created_at).toISOString(),
     ...(row.image_thumb ? { imageThumb: row.image_thumb } : {}),
+    ...(row.tags && row.tags.length > 0 ? { tags: row.tags } : {}),
+    ...(row.recurring ? { recurring: true } : {}),
+    ...(row.was_edited ? { wasEdited: true } : {}),
   };
 }
 
@@ -50,6 +56,9 @@ function toRow(tx: Transaction, userId: string) {
     items: tx.items,
     created_at: tx.createdAt,
     image_thumb: tx.imageThumb ?? null,
+    tags: tx.tags ?? [],
+    recurring: tx.recurring ?? false,
+    was_edited: tx.wasEdited ?? false,
   };
 }
 

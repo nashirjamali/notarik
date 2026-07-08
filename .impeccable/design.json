@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-07T00:00:00.000Z",
+  "title": "Design System: Notarik",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Signal Blue", "canonical": "oklch(60% 0.19 254)", "tonalRamp": ["#0A1E3D", "#123A6E", "#1B6FDB", "#2A85FF", "#5FA3FF", "#8FC1FF", "#B1E5FC", "#E6F4FF"] },
+      "accent": { "role": "secondary", "displayName": "Violet Accent", "canonical": "oklch(58% 0.21 296)", "tonalRamp": ["#241148", "#3E2287", "#6A3EDB", "#8E59FF", "#A87CFF", "#C1A0FF", "#CABDFF", "#EDE7FF"] },
+      "success": { "role": "status", "displayName": "On-Track Green", "canonical": "oklch(72% 0.15 140)", "tonalRamp": ["#1E3A17", "#3C7A2E", "#63A34B", "#83BF6E", "#A3D394", "#C3E6B8", "#B5E4CA", "#EAFAE5"] },
+      "warning": { "role": "status", "displayName": "Near-Limit Amber", "canonical": "oklch(78% 0.16 75)", "tonalRamp": ["#4A2E00", "#8A5800", "#CC8600", "#FFB020", "#FFC456", "#FFD988", "#FFD88D", "#FFF3D6"] },
+      "danger": { "role": "status", "displayName": "Over-Budget Coral", "canonical": "oklch(68% 0.19 25)", "tonalRamp": ["#4A0F08", "#8C2113", "#D8422A", "#FF6A55", "#FF8F7D", "#FFB3A6", "#FFBC99", "#FFE7E4"] },
+      "neutral-ink": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(21% 0.004 260)", "tonalRamp": ["#111315", "#1A1D1F", "#272B30", "#33383F", "#6F767E", "#9A9FA5", "#EFEFEF", "#FCFCFC"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Fraunces)", "purpose": "Hero totals and auth headings only — one serif moment per screen." },
+      "headline": { "displayName": "Headline", "purpose": "Section headers: Recap, Monthly budget, Transactions." },
+      "title": { "displayName": "Title", "purpose": "Card/row titles, merchant names." },
+      "body": { "displayName": "Body", "purpose": "Row metadata, descriptions, button labels." },
+      "label": { "displayName": "Label", "purpose": "Field labels, status pills, timestamps." }
+    },
+    "shadows": [
+      { "name": "shadow-stroke", "value": "0 0 0 2px #EFEFEF inset", "purpose": "Default bordered-card look without adding to layout width." },
+      { "name": "shadow-widget", "value": "0px 4px 8px -4px rgba(0,0,0,0.1), inset 0px -1px 1px rgba(0,0,0,0.04), inset 0px 2px 0px rgba(255,255,255,0.25)", "purpose": "The one primary-action card (Add a receipt) and lifted elements." },
+      { "name": "shadow-dropdown", "value": "inset 0 0 0 2px #EFEFEF, 0 4px 12px rgba(244,244,244,0.1)", "purpose": "Floating surfaces: bulk-action toolbar, receipt-viewer modal." }
+    ],
+    "motion": [
+      { "name": "ease-out-quint", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default easing for progress bars, width/opacity transitions." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "rail", "value": "768px", "note": "sidebar collapses to icon rail (768–1259px)" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "wide", "value": "1260px", "note": "sidebar expands to 300px" },
+      { "name": "x-up", "value": "1340px", "note": "sidebar expands to 340px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default action button — Save, Sign in, Add for this month.",
+      "html": "<button class=\"ds-btn-primary\">Save expense</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 20px; border-radius: 12px; background: #2A85FF; color: #FFFFFF; font: 700 15px/1.6 Inter, sans-serif; border: none; cursor: pointer; transition: background-color 0.2s; } .ds-btn-primary:hover { background: #1B6FDB; } .ds-btn-primary:focus-visible { outline: 2px solid #2A85FF; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; pointer-events: none; }"
+    },
+    {
+      "name": "Stroke Button",
+      "kind": "button",
+      "refersTo": "button-stroke",
+      "description": "Secondary action — Cancel, Clear, Choose another photo.",
+      "html": "<button class=\"ds-btn-stroke\">Cancel</button>",
+      "css": ".ds-btn-stroke { display: inline-flex; align-items: center; justify-content: center; height: 48px; padding: 0 20px; border-radius: 12px; background: transparent; color: #1A1D1F; font: 700 15px/1.6 Inter, sans-serif; border: none; box-shadow: inset 0 0 0 2px #EFEFEF; cursor: pointer; transition: box-shadow 0.2s; } .ds-btn-stroke:hover { box-shadow: inset 0 0 0 2px #1A1D1F; }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "status-blue",
+      "description": "Closed five-color badge vocabulary — recurring/info(blue), on-track(green), over-budget(red), tag(purple), edited/near-limit(yellow).",
+      "html": "<span class=\"ds-status ds-status-blue\">Recurring</span>",
+      "css": ".ds-status { display: inline-block; border-radius: 6px; padding: 0 8px; font: 700 12px/24px Inter, sans-serif; } .ds-status-blue { background: #B1E5FC; color: #2A85FF; } .ds-status-green { background: #EAFAE5; color: #83BF6E; } .ds-status-red { background: #FFE7E4; color: #FF6A55; } .ds-status-purple { background: #CABDFF; color: #8E59FF; } .ds-status-yellow { background: #FFD88D; color: #1A1D1F; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat-by-default content container; the app's one universal surface.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Monthly budget</div><p>Card content goes here.</p></div>",
+      "css": ".ds-card { background: #FCFCFC; border-radius: 8px; box-shadow: 0 0 0 2px #EFEFEF inset; padding: 24px; } .ds-card-title { font: 600 20px/1.6 Inter, sans-serif; letter-spacing: -0.02em; color: #1A1D1F; margin-bottom: 32px; }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Text input — flat neutral fill at rest, border + white background on focus.",
+      "html": "<input class=\"ds-field\" placeholder=\"Your email\" />",
+      "css": ".ds-field { height: 48px; width: 100%; border-radius: 12px; border: 2px solid transparent; background: #F4F4F4; padding: 0 10px; font: 600 15px/1.6 Inter, sans-serif; color: #1A1D1F; outline: none; transition: border-color 0.2s, background-color 0.2s; } .ds-field::placeholder { color: #6F767E; } .ds-field:focus { border-color: #9A9FA5; background: #FFFFFF; }"
+    },
+    {
+      "name": "Checkbox",
+      "kind": "input",
+      "refersTo": "checkbox",
+      "description": "24×24 tick-box with a filled Signal Blue checked state — used for row selection and boolean toggles (e.g. recurring).",
+      "html": "<label class=\"ds-checkbox\"><input type=\"checkbox\" class=\"ds-checkbox-input\" checked /><span class=\"ds-checkbox-box\"><svg class=\"ds-checkbox-tick\" viewBox=\"0 0 17 12\"><path d=\"M16.707.293a1 1 0 0 1 0 1.414l-8.586 8.586a3 3 0 0 1-4.243 0L.293 6.707A1 1 0 0 1 .735 5.02a1 1 0 0 1 .973.273l3.586 3.586a1 1 0 0 0 1.414 0L15.293.293a1 1 0 0 1 1.414 0z\" fill=\"#fcfcfc\"/></svg></span><span class=\"ds-checkbox-label\">This repeats every month</span></label>",
+      "css": ".ds-checkbox { display: inline-flex; align-items: center; cursor: pointer; user-select: none; } .ds-checkbox-input { position: absolute; opacity: 0; } .ds-checkbox-box { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; border: 2px solid rgba(111,118,126,0.4); background: #2A85FF; transition: border-color 0.2s, background-color 0.2s; } .ds-checkbox-tick { width: 17px; height: 12px; } .ds-checkbox-label { padding-left: 16px; font: 600 15px/1.6 Inter, sans-serif; color: #1A1D1F; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Calm Ledger",
+    "overview": "Notarik removes the data-entry chore that kills the spending-tracking habit. The interface is the opposite of the spreadsheet it replaces: unhurried, legible, and trustworthy. The numbers are the product, so the visual system gets out of their way. A serif display voice (Fraunces) marks the moments that matter — the recap headline, a budget total, a sign-in heading — while a dense, well-tuned sans (Inter) carries every working surface. Restraint is the doctrine: a single indigo accent carries primary actions and selection, never decoration, and a five-color status vocabulary gives every badge and flag a consistent, calm home instead of one-off treatments per feature.",
+    "keyCharacteristics": [
+      "Calm, legible, trust-first — the data leads, the chrome recedes.",
+      "Restrained color: tinted neutrals + one indigo accent (≤10% of any screen) + a fixed status-pill vocabulary.",
+      "Editorial hierarchy (Fraunces serif) over dense, scannable Inter body.",
+      "A shared component kit (components/ui) is the single source of truth for every screen.",
+      "Honesty as a design value: estimates look like estimates, corrections are visibly flagged."
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "Signal Blue is the only color that ever means \"act here\" or \"this is selected.\" It appears on ≤10% of any screen.", "section": "colors" },
+      { "name": "The Closed Status Set Rule", "body": "Every badge, flag, or state indicator uses one of the five Status variants. Never invent a new inline color treatment for a new feature.", "section": "colors" },
+      { "name": "The Honest-Money Rule", "body": "Projection and estimate surfaces never use the primary accent as if they were facts.", "section": "colors" },
+      { "name": "The Tabular-Figures Rule", "body": "Every monetary value uses tabular lining figures. Misaligned digits read as untrustworthy in a money tool.", "section": "typography" },
+      { "name": "The One-Serif-Moment Rule", "body": "Fraunces appears only on hero figures and page/auth headings — never on a button, label, badge, or table cell.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest; shadow-widget and shadow-dropdown are reserved for the one primary action and genuinely floating elements.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do pull every button, card, form field, checkbox, toggle, and badge from components/ui — never hand-roll an equivalent with raw Tailwind on a new screen.",
+      "Do keep the data the hero — tinted neutrals for surfaces, Signal Blue reserved for action/selection/state.",
+      "Do use tabular lining figures (.nums) for every monetary value.",
+      "Do make body text ≥4.5:1 against its background; bump toward Ink if contrast is even close.",
+      "Do give every state an honest treatment: loading copy, an empty state that teaches the first-receipt flow, clear error recovery.",
+      "Do keep projections visibly labelled as estimates and styled with the dashed/muted Projection treatment.",
+      "Do design mobile-first.",
+      "Do vary spacing for rhythm — tight within a related group, generous between groups."
+    ],
+    "donts": [
+      "Don't ship the crypto/neon dashboard look: no neon gradients, no glassmorphism, no hype-y data viz.",
+      "Don't recreate the spreadsheet it replaces: no gridlines-everywhere, no gray-on-gray, no flat hierarchy.",
+      "Don't use a warm cream/sand/paper body background.",
+      "Don't use tracked all-caps eyebrows, numbered section markers, or identical icon-card grids.",
+      "Don't use gradient text or colored side-stripe borders anywhere except the one deliberate Title bar exception.",
+      "Don't let Signal Blue leak into decoration — if it's on more than ~10% of the screen, something is wrong.",
+      "Don't invent a one-off badge color for a new feature; map every flag to one of the five closed Status variants.",
+      "Don't apply shadow-widget to a passive data card for texture."
+    ]
+  }
+}

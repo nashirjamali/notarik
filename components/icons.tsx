@@ -128,3 +128,75 @@ export const ChevronRightIcon = (p: IconProps) => (
     <path d="m10 6 6 6-6 6" />
   </svg>
 );
+
+export const MailIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="3" y="5.5" width="18" height="13" rx="2" />
+    <path d="m4 7.5 6.94 4.63a2 2 0 0 0 2.12 0L20 7.5" />
+  </svg>
+);
+
+export const LockIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="4.5" y="10.5" width="15" height="9.5" rx="2" />
+    <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+  </svg>
+);
+
+export const HomeIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 10.5 12 4l8 6.5" />
+    <path d="M6 9.3V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.3" />
+    <path d="M10 20v-5h4v5" />
+  </svg>
+);
+
+export const WalletIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M3 8a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2" />
+    <rect x="3" y="6" width="18" height="13" rx="2.5" />
+    <path d="M21 11h-3.5a1.5 1.5 0 0 0 0 3H21" />
+  </svg>
+);
+
+export const HelpIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.6 9.4a2.5 2.5 0 0 1 4.7 1.1c0 1.7-2.3 2-2.3 3.3" />
+    <path d="M12 17h.01" />
+  </svg>
+);
+
+export const BellIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M6 9a6 6 0 0 1 12 0c0 3.5.9 5 1.7 5.9a1 1 0 0 1-.75 1.66H5.05A1 1 0 0 1 4.3 14.9C5.1 14 6 12.5 6 9Z" />
+    <path d="M10 19a2 2 0 0 0 4 0" />
+  </svg>
+);
+
+export const SunIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6 19 19M19 5l-1.4 1.4M6.4 17.6 5 19" />
+  </svg>
+);
+
+export const MoonIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M20 14.4A8 8 0 0 1 9.6 4 8 8 0 1 0 20 14.4Z" />
+  </svg>
+);
+
+export const MenuIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+
+export const LogOutIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M15 5h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2" />
+    <path d="M10 12h9" />
+    <path d="m16 9 3 3-3 3" />
+  </svg>
+);
