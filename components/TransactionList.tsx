@@ -266,7 +266,7 @@ function Row({
             type="button"
             onClick={() => setConfirming(true)}
             aria-label={`Delete ${tx.merchant} expense`}
-            className="shrink-0 rounded-md p-1.5 text-muted opacity-0 transition-[opacity,color,background-color] hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+            className="shrink-0 rounded-md p-1.5 text-muted transition-colors hover:bg-danger-soft hover:text-danger"
           >
             <TrashIcon size={16} />
           </button>
